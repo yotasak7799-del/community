@@ -1222,6 +1222,7 @@ async function doSpin(wheelId){
 /* ---------------- event delegation ---------------- */
 document.addEventListener('submit', async (e)=>{
   e.preventDefault();
+  try{
   if(e.target.id==='authForm'){
     const email = $('#email').value, pass = $('#password').value;
     const mode = document.querySelector('#authTabs .btn-accent').dataset.tab;
@@ -1323,6 +1324,10 @@ document.addEventListener('submit', async (e)=>{
     else{ await db.collection('wheels').add(data); }
     await loadWheels(); state.modal=null; state.adminTab='wheels'; render(); toast('บันทึกวงล้อแล้ว');
   }
+  }catch(err){
+    console.error('[hijime] submit error:', e.target.id, err);
+    toast('บันทึกไม่สำเร็จ: ' + (err && (err.message || err.code) || 'ไม่ทราบสาเหตุ'));
+  }
 });
 function translateAuthErr(err){
   const m = {
@@ -1346,6 +1351,7 @@ document.addEventListener('click', async (e)=>{
   const t = e.target.closest('[data-action]');
   if(!t) return;
   const action = t.dataset.action;
+  try{
 
   if(action==='back'){ back(); return; }
   if(action==='goto'){ nav(t.dataset.route); return; }
@@ -1487,6 +1493,11 @@ document.addEventListener('click', async (e)=>{
   if(action==='del-wheel'){ await db.collection('wheels').doc(t.dataset.id).delete(); await loadWheels(); document.getElementById('adminBody').innerHTML = adminTabBody('wheels'); return; }
 
   if(t.id==='spinBtn'){ doSpin(t.dataset.id); return; }
+
+  }catch(err){
+    console.error('[hijime] action error:', action, err);
+    toast('เกิดข้อผิดพลาด: ' + (err && (err.message || err.code) || 'ไม่ทราบสาเหตุ'));
+  }
 });
 function attachPrizeRowHandler(){
   const btn = document.getElementById('addPrizeRow');
