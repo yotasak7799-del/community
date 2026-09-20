@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hijime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-storage-compat.js"></script>
+<style>
+:root{
+  --bg:#0a0a0a; --bg2:#111111; --surface:#161616; --surface2:#1e1e1e;
+  --line:#2a2a2a; --text:#f2f2ef; --muted:#9a9a95; --accent:#e7e5df;
+  --accent-text:#0a0a0a; --danger:#c94f4f; --good:#7fae7a;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root:not([data-theme="light"]){}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);
+  font-family:'Noto Sans Thai',sans-serif; -webkit-font-smoothing:antialiased;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+h1,h2,h3,.disp{font-family:'Zen Kaku Gothic New','Noto Sans Thai',sans-serif;}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit}
+
+#frame{
+  max-width:430px; margin:0 auto; min-height:100%;
+  background:linear-gradient(180deg,var(--bg) 0%, var(--bg2) 100%);
+  position:relative; display:flex; flex-direction:column;
+  border-left:1px solid var(--line); border-right:1px solid var(--line);
+}
+.topbar{
+  position:sticky; top:0; z-index:30;
+  padding:14px 16px calc(14px + env(safe-area-inset-top,0px));
+  padding-top:calc(14px + env(safe-area-inset-top,0px));
+  background:rgba(10,10,10,.72); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:10px;
+}
+.back-btn{
+  width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
+  background:var(--surface); color:var(--text); display:flex; align-items:center;
+  justify-content:center; flex:none; transition:.15s;
+}
+.back-btn:hover{background:var(--surface2); border-color:#3a3a3a}
+.brand{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.brand img{width:26px;height:26px;border-radius:6px;object-fit:cover}
+.brand-name{font-weight:700;letter-spacing:.02em;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar .spacer{flex:1}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;color:var(--text)}
+
+main{flex:1; padding:16px 16px 100px; overflow-x:hidden;}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:0 6px 20px rgba(0,0,0,.25);}
+.card + .card{margin-top:12px}
+.section-title{font-size:13px; color:var(--muted); letter-spacing:.04em; margin:18px 2px 8px;}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 18px; border-radius:12px; border:1px solid var(--line); background:var(--surface2); color:var(--text); font-weight:600; font-size:14px; transition:.15s;}
+.btn:hover{border-color:#444; transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-accent{background:var(--accent); color:var(--accent-text); border-color:var(--accent)}
+.btn-block{width:100%}
+.btn-ghost{background:transparent}
+.btn-danger{background:transparent;border-color:var(--danger);color:var(--danger)}
+.btn-sm{padding:8px 12px;font-size:12px;border-radius:10px}
+input[type=text],input[type=email],input[type=password],input[type=date],input[type=number],textarea,select{
+  width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line);
+  background:var(--bg2); color:var(--text); font-size:14px; outline:none;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{resize:vertical; min-height:80px}
+label{font-size:12px; color:var(--muted); display:block; margin:12px 0 6px;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.pill{display:inline-flex; align-items:center; padding:5px 12px; border-radius:999px; background:var(--surface2); border:1px solid var(--line); font-size:12px; color:var(--muted)}
+.pill.on{background:var(--accent); color:var(--accent-text); border-color:var(--accent)}
+.avatar{width:74px;height:74px;border-radius:22px;object-fit:cover;background:var(--surface2); border:1px solid var(--line);}
+.avatar-lg{width:104px;height:104px;border-radius:28px;}
+.muted{color:var(--muted)}
+.row{display:flex; align-items:center; gap:12px}
+.between{display:flex; align-items:center; justify-content:space-between}
+.divider{height:1px;background:var(--line); margin:14px 0}
+.poster{width:100%; aspect-ratio:1546/423; object-fit:cover; border-radius:14px; background:var(--surface2); border:1px solid var(--line);}
+.badge-num{font-variant-numeric:tabular-nums; letter-spacing:.06em;}
+.toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:var(--surface2); border:1px solid var(--line); color:var(--text); padding:10px 18px; border-radius:999px; font-size:13px; z-index:200; box-shadow:0 8px 24px rgba(0,0,0,.4); opacity:0; transition:.25s;}
+.toast.show{opacity:1}
+.bottomnav{
+  position:sticky; bottom:0; z-index:30; display:flex; border-top:1px solid var(--line);
+  background:rgba(10,10,10,.85); backdrop-filter:blur(10px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.navbtn{flex:1; padding:12px 4px 10px; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--muted); font-size:10.5px; border:none; background:transparent;}
+.navbtn.active{color:var(--text)}
+.navbtn svg{width:20px;height:20px}
+.float-status{
+  position:fixed; top:calc(70px + env(safe-area-inset-top,0px)); right:calc((100% - 430px)/2 + 12px);
+  z-index:50; max-width:220px;
+}
+@media (max-width:460px){.float-status{right:12px}}
+.float-toggle{
+  width:40px;height:40px;border-radius:50%;background:rgba(30,30,30,.5); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center;
+  color:var(--muted); float:right;
+}
+.float-panel{
+  margin-top:8px; background:rgba(22,22,22,.55); backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; max-height:220px; overflow:auto;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.float-panel .item{display:flex;align-items:center;gap:8px;padding:6px 4px; font-size:12px;}
+.dot{width:7px;height:7px;border-radius:50%;background:#666; flex:none}
+.dot.online{background:#7fae7a}
+.dot.busy{background:#c9a24f}
+.dot.off{background:#555}
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.6); z-index:100; display:flex; align-items:flex-end; justify-content:center;}
+.modal{width:100%; max-width:430px; background:var(--surface); border:1px solid var(--line); border-radius:20px 20px 0 0; padding:18px; max-height:85vh; overflow:auto;}
+.modal-top{background:var(--surface); border-radius:0 0 20px 20px; align-self:flex-start; margin-top:0;}
+.grid-members{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.member-card{background:var(--surface2); border:1px solid var(--line); border-radius:14px; padding:12px; text-align:center;}
+.member-card img{width:56px;height:56px;border-radius:16px;object-fit:cover; margin-bottom:6px;}
+.wheel-wrap{position:relative; display:flex; justify-content:center; margin:10px 0;}
+.wheel-pointer{position:absolute; top:-6px; left:50%; transform:translateX(-50%); font-size:22px; z-index:5;}
+.empty{padding:40px 10px; text-align:center; color:var(--muted); font-size:13px;}
+.tag-input{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
+.tag-input .pill{cursor:pointer}
+.login-wrap{min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px;}
+.tabbar{display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; margin-bottom:10px;}
+.tabbar button{white-space:nowrap;}
+.spinner{width:16px;height:16px;border-radius:50%;border:2px solid #555;border-top-color:var(--text);animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hint{font-size:11px;color:var(--muted); margin-top:4px;}
+fieldset{border:1px solid var(--line); border-radius:12px; margin:12px 0; padding:10px;}
+legend{padding:0 6px; font-size:12px; color:var(--muted);}
+.status-select{width:auto; display:inline-block; padding:6px 10px; font-size:12px;}
+.footer-admin{padding:30px 16px 50px; text-align:center;}
+.footer-admin summary{cursor:pointer; color:var(--muted); font-size:12px; list-style:none;}
+.footer-admin summary::-webkit-details-marker{display:none}
+</style>
+</head>
+<body>
+<div id="frame">
+  <div id="app"></div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+/* ---------------- Firebase ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBPUymXk4LkiELJnIp3I8w4nzM5CD8NQ88",
+  authDomain: "community-cm-779f9.firebaseapp.com",
+  projectId: "community-cm-779f9",
+  storageBucket: "community-cm-779f9.firebasestorage.app",
+  messagingSenderId: "875179230791",
+  appId: "1:875179230791:web:84a1da013d8330ecac1362",
+  measurementId: "G-MVKL3LSWWK"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let storage = null;
+try{ storage = firebase.storage(); }catch(e){ console.warn('storage unavailable', e); }
+
+/* ---------------- helpers ---------------- */
+const $ = s => document.querySelector(s);
+const app = () => document.getElementById('app');
+function toast(msg){
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(window.__tt); window.__tt = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function esc(s){ return (s===undefined||s===null)?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function uid8(){ return String(Math.floor(10000000+Math.random()*89999999)); }
+function fmtDate(ts){
+  if(!ts) return '-';
+  let d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'2-digit'}) + ' ' + d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+}
+function calcAge(dob){
+  if(!dob) return '-';
+  const b = new Date(dob), n = new Date();
+  let a = n.getFullYear()-b.getFullYear();
+  if(n.getMonth()<b.getMonth() || (n.getMonth()===b.getMonth() && n.getDate()<b.getDate())) a--;
+  return a;
+}
+function fileToResizedDataURL(file, maxW){
+  return new Promise((res,rej)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e => { img.onload = ()=>{
+        const scale = Math.min(1, maxW/img.width);
+        const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+        const c = document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        res(c.toDataURL('image/jpeg',0.82));
+      };
+      img.onerror = rej;
+      img.src = e.target.result;
+    };
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+}
+async function uploadImage(file, path, maxW){
+  const dataUrl = await fileToResizedDataURL(file, maxW || 1000);
+  if(storage){
+    try{
+      const ref = storage.ref().child(path + '_' + Date.now() + '.jpg');
+      await ref.putString(dataUrl, 'data_url');
+      return await ref.getDownloadURL();
+    }catch(e){ console.warn('storage upload failed, falling back to inline', e); }
+  }
+  return dataUrl; // fallback: store the data URL itself
+}
+
+const COSPLAY_STYLES = ["อนิเมะ/มังงะ","เกม","ออริจินัลคาแรกเตอร์","ประวัติศาสตร์/ย้อนยุค","ภาพยนตร์/ซีรีส์","แฟนตาซี/ครีเจอร์"];
+
+/* ---------------- state ---------------- */
+let state = {
+  user:null, profile:null, route:'#/login', stack:[],
+  siteConfig:{siteName:'Hijime', logoURL:'', accent:'#e7e5df', adminUser:'admin', adminPass:'test'},
+  adminAuthed: sessionStorage.getItem('hijime_admin')==='1',
+  allUsers:[], missions:[], missionCats:[], events:[], wheels:[],
+  floatOpen:false
+};
+
+function applyTheme(){
+  document.documentElement.style.setProperty('--accent', state.siteConfig.accent || '#e7e5df');
+}
+
+function nav(route, push=true){
+  if(push && state.route) state.stack.push(state.route);
+  state.route = route;
+  render();
+  window.scrollTo(0,0);
+}
+function back(){
+  const prev = state.stack.pop();
+  state.route = prev || (state.user ? '#/profile' : '#/login');
+  render();
+  window.scrollTo(0,0);
+}
+
+/* ---------------- data loaders ---------------- */
+async function loadSiteConfig(){
+  try{
+    const d = await db.collection('siteConfig').doc('main').get();
+    if(d.exists) state.siteConfig = Object.assign(state.siteConfig, d.data());
+    else await db.collection('siteConfig').doc('main').set(state.siteConfig);
+  }catch(e){ console.warn('siteConfig load failed', e); }
+  applyTheme();
+}
+async function loadProfile(uid){
+  const d = await db.collection('users').doc(uid).get();
+  if(d.exists) return {id:d.id, ...d.data()};
+  return null;
+}
+async function loadAllUsers(){
+  const snap = await db.collection('users').get();
+  state.allUsers = snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+async function loadMissions(){
+  const snap = await db.collection('missions').orderBy('createdAt','desc').get();
+  state.missions = snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+async function loadMissionCats(){
+  const snap = await db.collection('missionCategories').get();
+  state.missionCats = snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+async function loadEvents(){
+  const snap = await db.collection('events').orderBy('createdAt','desc').get();
+  state.events = snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+async function loadWheels(){
+  const snap = await db.collection('wheels').get();
+  state.wheels = snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+
+/* ---------------- auth ---------------- */
+auth.onAuthStateChanged(async (u)=>{
+  state.user = u;
+  if(u){
+    state.profile = await loadProfile(u.uid);
+    if(!state.profile){
+      const data = {
+        memberId: uid8(), nickname:'', stageName:'', bio:'', dob:'', joinDuration:'',
+        cosplayStyles:{}, locationText:'', lat:null, lng:null, points:0, photoURL:'',
+        portfolio:[], privacy:'private', status:'ออนไลน์', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await db.collection('users').doc(u.uid).set(data);
+      state.profile = {id:u.uid, ...data};
+    }
+    if(state.route === '#/login') state.route = '#/profile';
+  } else {
+    state.profile = null;
+    state.route = '#/login';
+  }
+  render();
+});
+
+/* ---------------- top bar / shell ---------------- */
+function shell(inner, opts={}){
+  const showBack = state.stack.length>0 && opts.back!==false;
+  const title = opts.title || '';
+  return `
+  <div class="topbar">
+    ${showBack ? `<button class="back-btn" data-action="back">${ICONS.back}</button>` : `<div style="width:36px"></div>`}
+    <div class="brand">
+      ${state.siteConfig.logoURL ? `<img src="${esc(state.siteConfig.logoURL)}">` : ''}
+      <div class="brand-name">${esc(title || state.siteConfig.siteName)}</div>
+    </div>
+    ${opts.right || ''}
+  </div>
+  <main>${inner}</main>
+  ${state.user ? bottomNav() : ''}
+  ${floatWidget()}
+  `;
+}
+const ICONS = {
+  back:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>`,
+  home:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>`,
+  users:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2c2.7.4 4.5 2.4 4.5 5.8"/></svg>`,
+  flag:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/></svg>`,
+  bell:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 004 0"/></svg>`,
+  spin:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg>`,
+  eye:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>`
+};
+function bottomNav(){
+  const items = [
+    ['#/profile', ICONS.home, 'โปรไฟล์'],
+    ['#/members', ICONS.users, 'สมาชิก'],
+    ['#/missions', ICONS.flag, 'ภารกิจ'],
+    ['#/events', ICONS.bell, 'กิจกรรม'],
+    ['#/wheel', ICONS.spin, 'วงล้อ'],
+  ];
+  return `<div class="bottomnav">${items.map(([r,i,l])=>`
+    <button class="navbtn ${state.route===r?'active':''}" data-action="goto" data-route="${r}">${i}<span>${l}</span></button>
+  `).join('')}</div>`;
+}
+function floatWidget(){
+  if(!state.user) return '';
+  const users = state.allUsers.length ? state.allUsers : [state.profile].filter(Boolean);
+  const list = users.slice(0,20).map(u=>{
+    const st = u.status || 'ออฟไลน์';
+    const cls = st.includes('ออนไลน์')?'online':(st.includes('ไม่ว่าง')?'busy':'off');
+    return `<div class="item"><span class="dot ${cls}"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.stageName||u.nickname||'สมาชิก')}</span><span class="muted">${esc(st)}</span></div>`;
+  }).join('') || `<div class="empty">ไม่มีข้อมูล</div>`;
+  return `
+  <div class="float-status">
+    <button class="float-toggle" data-action="toggle-float">${ICONS.eye}</button>
+    ${state.floatOpen ? `<div class="float-panel">${list}</div>` : ''}
+  </div>`;
+}
+
+/* ---------------- pages ---------------- */
+function pageLogin(){
+  return `
+  <div class="login-wrap">
+    <div style="width:100%">
+      <div style="text-align:center;margin-bottom:24px;">
+        ${state.siteConfig.logoURL?`<img src="${esc(state.siteConfig.logoURL)}" style="width:56px;height:56px;border-radius:16px;object-fit:cover;margin-bottom:10px;">`:''}
+        <h1 class="disp" style="font-size:28px;margin:0;letter-spacing:.02em;">${esc(state.siteConfig.siteName)}</h1>
+        <div class="muted" style="font-size:13px;margin-top:6px;">ชุมชนคอสเพลย์ของคุณ</div>
+      </div>
+      <div class="card">
+        <div class="tabbar" id="authTabs">
+          <button class="btn btn-sm btn-accent" data-tab="login">เข้าสู่ระบบ</button>
+          <button class="btn btn-sm btn-ghost" data-tab="register">สมัครสมาชิก</button>
+        </div>
+        <form id="authForm">
+          <label>อีเมล</label>
+          <input type="email" id="email" required placeholder="you@example.com">
+          <label>รหัสผ่าน</label>
+          <input type="password" id="password" required placeholder="อย่างน้อย 6 ตัวอักษร">
+          <div id="authErr" class="hint" style="color:var(--danger)"></div>
+          <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;" id="authSubmit">เข้าสู่ระบบ</button>
+        </form>
+      </div>
+      <details class="footer-admin"><summary>สำหรับผู้ดูแลระบบ</summary>
+        ${adminLoginForm()}
+      </details>
+    </div>
+  </div>`;
+}
+function adminLoginForm(){
+  return `
+  <form id="adminLoginForm" style="margin-top:14px; text-align:left;">
+    <label>Username</label><input type="text" id="adminU" required>
+    <label>Password</label><input type="password" id="adminP" required>
+    <button type="submit" class="btn btn-block" style="margin-top:10px;">เข้าสู่ระบบแอดมิน</button>
+  </form>`;
+}
+
+function pageProfile(){
+  const p = state.profile || {};
+  const styles = p.cosplayStyles || {};
+  return shell(`
+    <div class="card">
+      <div class="row">
+        <img class="avatar avatar-lg" src="${p.photoURL || placeholderAvatar()}">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:18px;">${esc(p.stageName||p.nickname||'ตั้งชื่อในวงการ')}</div>
+          <div class="muted" style="font-size:13px;">${esc(p.nickname||'')}</div>
+          <div class="badge-num muted" style="font-size:12px;margin-top:4px;">UID ${esc(p.memberId||'--------')}</div>
+        </div>
+      </div>
+      <div class="between" style="margin-top:14px;">
+        <div class="pill">แต้มสะสม: <b style="margin-left:4px;color:var(--text)">${p.points||0}</b></div>
+        <button class="btn btn-sm" data-action="edit-profile">แก้ไขโปรไฟล์</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" style="margin-top:0">ข้อมูลส่วนตัว</div>
+      <div style="font-size:13px;line-height:1.7">
+        <div><span class="muted">วันเกิด:</span> ${p.dob?esc(p.dob)+' (อายุ '+calcAge(p.dob)+' ปี)':'-'}</div>
+        <div><span class="muted">ระยะเวลาเข้าร่วมวงการ:</span> ${esc(p.joinDuration||'-')}</div>
+        <div><span class="muted">พิกัด/ที่อยู่:</span> ${esc(p.locationText||'-')}</div>
+        <div><span class="muted">ความเป็นส่วนตัว:</span> ${p.privacy==='public'?'สาธารณะ':'ส่วนตัว'}</div>
+      </div>
+      <div class="divider"></div>
+      <div class="muted" style="font-size:13px;white-space:pre-wrap;">${esc(p.bio||'ยังไม่มีประวัติส่วนตัว')}</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" style="margin-top:0">สายคอสเพลย์</div>
+      <canvas id="radarMe" height="220"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="between"><div class="section-title" style="margin:0">ผลงาน</div><button class="btn btn-sm" data-action="add-portfolio">+ เพิ่มผลงาน</button></div>
+      <div class="grid-members" style="margin-top:10px;grid-template-columns:1fr 1fr 1fr;">
+        ${(p.portfolio||[]).map((it,i)=>`
+          <div style="position:relative">
+            <img src="${it.url}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line)">
+            <div class="muted" style="font-size:10px;margin-top:3px;text-align:center;">${esc(it.category||'')}</div>
+            <button data-action="del-portfolio" data-i="${i}" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:50%;width:20px;height:20px;font-size:12px;">✕</button>
+          </div>
+        `).join('') || `<div class="empty" style="grid-column:1/-1">ยังไม่มีผลงาน</div>`}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="between"><div class="section-title" style="margin:0">ประวัติกิจกรรม/ภารกิจโดยสรุป</div><button class="btn btn-sm" data-action="goto" data-route="#/history">ดูทั้งหมด</button></div>
+    </div>
+
+    <button class="btn btn-danger btn-block" style="margin-top:16px;" data-action="logout">ออกจากระบบ</button>
+  `, {title:'โปรไฟล์'});
+}
+function placeholderAvatar(){
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="120" height="120" fill="#1e1e1e"/><circle cx="60" cy="46" r="22" fill="#3a3a3a"/><rect x="20" y="76" width="80" height="40" rx="20" fill="#3a3a3a"/></svg>`);
+}
+
+function radarConfigFor(stylesObj){
+  const labels = COSPLAY_STYLES;
+  const data = labels.map(l => Number(stylesObj?.[l] || 0));
+  return {
+    type:'radar',
+    data:{ labels, datasets:[{ data, backgroundColor:'rgba(231,229,223,0.18)', borderColor:'#e7e5df', pointBackgroundColor:'#e7e5df', borderWidth:2 }]},
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      scales:{ r:{ min:0, max:100, angleLines:{color:'#2a2a2a'}, grid:{color:'#2a2a2a'},
+        pointLabels:{color:'#cfcfc8', font:{size:10, family:"'Noto Sans Thai'"}},
+        ticks:{display:false, backdropColor:'transparent'} } },
+      plugins:{ legend:{display:false} }
+    }
+  };
+}
+
+function editProfileModal(){
+  const p = state.profile || {};
+  const styles = p.cosplayStyles || {};
+  return `
+  <div class="modal-back" data-action="close-modal">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="between"><h3 style="margin:0">แก้ไขโปรไฟล์</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
+      <form id="profileForm">
+        <div style="text-align:center;margin:14px 0;">
+          <img id="avatarPreview" class="avatar avatar-lg" src="${p.photoURL||placeholderAvatar()}" style="cursor:pointer">
+          <div><label class="btn btn-sm" style="margin-top:8px;display:inline-flex;">เปลี่ยนรูปโปรไฟล์<input type="file" id="avatarFile" accept="image/*" style="display:none"></label></div>
+        </div>
+        <label>ชื่อเล่น</label><input type="text" id="f_nickname" value="${esc(p.nickname)}">
+        <label>ชื่อในวงการ</label><input type="text" id="f_stageName" value="${esc(p.stageName)}">
+        <label>ประวัติส่วนตัว</label><textarea id="f_bio">${esc(p.bio)}</textarea>
+        <div class="grid2">
+          <div><label>วัน/เดือน/ปีเกิด</label><input type="date" id="f_dob" value="${esc(p.dob)}"></div>
+          <div><label>ระยะเวลาเข้าร่วมวงการ</label><input type="text" id="f_join" placeholder="เช่น 2 ปี" value="${esc(p.joinDuration)}"></div>
+        </div>
+        <label>ตำแหน่ง/พิกัด (เขียนที่อยู่หรือปักหมุดพิกัดได้)</label>
+        <input type="text" id="f_loc" placeholder="เช่น 123/4 ถ.สุขุมวิท... หรือ 13.75,100.50" value="${esc(p.locationText)}">
+        <div class="section-title">สายคอสเพลย์ (0-100)</div>
+        ${COSPLAY_STYLES.map(s=>`
+          <div class="row" style="margin-bottom:6px;">
+            <div style="flex:1;font-size:13px;">${esc(s)}</div>
+            <input type="number" min="0" max="100" style="width:70px" class="stylept" data-style="${esc(s)}" value="${styles[s]||0}">
+          </div>
+        `).join('')}
+        <label>ความเป็นส่วนตัวของโปรไฟล์/ผลงาน</label>
+        <select id="f_privacy">
+          <option value="private" ${p.privacy!=='public'?'selected':''}>ส่วนตัว (ต้องได้รับอนุญาตให้ดู)</option>
+          <option value="public" ${p.privacy==='public'?'selected':''}>สาธารณะ (ทุกคนดูได้)</option>
+        </select>
+        <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;">บันทึก</button>
+      </form>
+    </div>
+  </div>`;
+}
+function portfolioModal(){
+  return `
+  <div class="modal-back" data-action="close-modal">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="between"><h3 style="margin:0">เพิ่มผลงาน</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
+      <form id="portfolioForm">
+        <label>รูปผลงาน</label><input type="file" id="pf_file" accept="image/*" required>
+        <label>หมวดหมู่ผลงาน</label><input type="text" id="pf_cat" placeholder="เช่น ถ่ายงาน Comic Market">
+        <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;">เพิ่ม</button>
+      </form>
+    </div>
+  </div>`;
+}
+
+function pageMembers(){
+  const users = state.allUsers;
+  return shell(`
+    <div class="section-title" style="margin-top:0">สมาชิกทั้งหมด (${users.length})</div>
+    <div class="grid-members">
+      ${users.map(u=>`
+        <div class="member-card" data-action="view-member" data-id="${u.id}" style="cursor:pointer">
+          <img src="${u.photoURL||placeholderAvatar()}">
+          <div style="font-weight:600;font-size:13px;">${esc(u.stageName||u.nickname||'สมาชิก')}</div>
+          <div class="muted" style="font-size:11px;">UID ${esc(u.memberId||'')}</div>
+          <div class="pill" style="margin-top:6px;font-size:10px;">${u.privacy==='public'?'สาธารณะ':'ส่วนตัว'}</div>
+        </div>
+      `).join('') || `<div class="empty">ยังไม่มีสมาชิก</div>`}
+    </div>
+  `, {title:'สมาชิกทั้งหมด'});
+}
+
+function pageMemberView(id){
+  const u = state.allUsers.find(x=>x.id===id);
+  if(!u) return shell(`<div class="empty">ไม่พบสมาชิก</div>`, {title:'โปรไฟล์สมาชิก'});
+  const isOwner = state.user && state.user.uid===id;
+  const canView = isOwner || u.privacy==='public';
+  return shell(`
+    <div class="card">
+      <div class="row">
+        <img class="avatar avatar-lg" src="${u.photoURL||placeholderAvatar()}">
+        <div>
+          <div style="font-weight:700;font-size:18px;">${esc(u.stageName||u.nickname||'สมาชิก')}</div>
+          <div class="muted" style="font-size:13px;">${esc(u.nickname||'')}</div>
+          <div class="badge-num muted" style="font-size:12px;margin-top:4px;">UID ${esc(u.memberId||'')}</div>
+        </div>
+      </div>
+    </div>
+    ${canView ? `
+    <div class="card">
+      <div class="section-title" style="margin-top:0">ข้อมูล</div>
+      <div style="font-size:13px;line-height:1.7">
+        <div><span class="muted">วันเกิด:</span> ${u.dob?esc(u.dob)+' (อายุ '+calcAge(u.dob)+' ปี)':'-'}</div>
+        <div><span class="muted">ระยะเวลาเข้าร่วมวงการ:</span> ${esc(u.joinDuration||'-')}</div>
+        <div><span class="muted">พิกัด/ที่อยู่:</span> ${esc(u.locationText||'-')}</div>
+      </div>
+      <div class="divider"></div>
+      <div class="muted" style="font-size:13px;white-space:pre-wrap;">${esc(u.bio||'ไม่มีประวัติ')}</div>
+    </div>
+    <div class="card"><div class="section-title" style="margin-top:0">สายคอสเพลย์</div><canvas id="radarOther" height="220"></canvas></div>
+    <div class="card">
+      <div class="section-title" style="margin-top:0">ผลงาน</div>
+      <div class="grid-members" style="grid-template-columns:1fr 1fr 1fr;">
+        ${(u.portfolio||[]).map(it=>`<div><img src="${it.url}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line)"><div class="muted" style="font-size:10px;text-align:center;">${esc(it.category||'')}</div></div>`).join('') || `<div class="empty" style="grid-column:1/-1">ไม่มีผลงาน</div>`}
+      </div>
+    </div>
+    ` : `<div class="card empty">โปรไฟล์นี้เป็นส่วนตัว เจ้าของยังไม่อนุญาตให้ดูข้อมูล</div>`}
+  `, {title:'โปรไฟล์สมาชิก'});
+}
+
+function pageMissions(){
+  const cats = state.missionCats;
+  return shell(`
+    <div class="tabbar">
+      <button class="btn btn-sm ${!state.missionFilter?'btn-accent':''}" data-action="filter-mission" data-cat="">ทั้งหมด</button>
+      ${cats.map(c=>`<button class="btn btn-sm ${state.missionFilter===c.id?'btn-accent':''}" data-action="filter-mission" data-cat="${c.id}">${esc(c.name)}</button>`).join('')}
+    </div>
+    ${state.missions.filter(m=>!state.missionFilter||m.categoryId===state.missionFilter).map(m=>{
+      const cat = cats.find(c=>c.id===m.categoryId);
+      const joined = (m.participants||[]).includes(state.user?.uid);
+      return `
+      <div class="card" data-action="view-mission" data-id="${m.id}" style="cursor:pointer">
+        ${m.posterURL?`<img class="poster" src="${m.posterURL}">`:''}
+        <div class="between" style="margin-top:10px;">
+          <div style="font-weight:700;">${esc(m.title)}</div>
+          ${cat?`<span class="pill">${esc(cat.name)}</span>`:''}
+        </div>
+        <div class="muted" style="font-size:12px;margin-top:4px;">${esc(m.startDate||'')} - ${esc(m.endDate||'')}</div>
+        <div style="font-size:13px;margin-top:6px;color:var(--muted)">${esc((m.description||'').slice(0,80))}${(m.description||'').length>80?'…':''}</div>
+        <div class="between" style="margin-top:10px;">
+          <div class="pill">${joined?'เข้าร่วมแล้ว':'ยังไม่เข้าร่วม'}</div>
+          <div class="muted" style="font-size:12px;">ผู้เข้าร่วม ${(m.participants||[]).length} คน</div>
+        </div>
+      </div>`;
+    }).join('') || `<div class="empty">ยังไม่มีภารกิจ</div>`}
+  `, {title:'ภารกิจ'});
+}
+
+function pageMissionView(id){
+  const m = state.missions.find(x=>x.id===id);
+  if(!m) return shell(`<div class="empty">ไม่พบภารกิจ</div>`);
+  const cat = state.missionCats.find(c=>c.id===m.categoryId);
+  const joined = (m.participants||[]).includes(state.user?.uid);
+  const participants = (m.participants||[]).map(pid=>state.allUsers.find(u=>u.id===pid)).filter(Boolean);
+  return shell(`
+    <div class="card">
+      ${m.posterURL?`<img class="poster" src="${m.posterURL}">`:''}
+      <div style="font-weight:700;font-size:18px;margin-top:10px;">${esc(m.title)}</div>
+      ${cat?`<span class="pill" style="margin-top:6px;">${esc(cat.name)}</span>`:''}
+      <div class="muted" style="font-size:12px;margin-top:8px;">ระยะเวลา: ${esc(m.startDate||'')} - ${esc(m.endDate||'')}</div>
+      <div style="margin-top:10px;font-size:14px;white-space:pre-wrap;">${esc(m.description||'')}</div>
+      <div class="divider"></div>
+      <div class="between"><span class="muted" style="font-size:13px;">ของรางวัล</span><b>${m.rewardType==='points'?(m.rewardValue+' แต้ม'):esc(m.rewardValue||'-')}</b></div>
+      <div style="margin-top:14px;">
+        ${!joined ? `<button class="btn btn-accent btn-block" data-action="join-mission" data-id="${m.id}">เข้าร่วมภารกิจ</button>`
+        : `<button class="btn btn-block" data-action="submit-mission" data-id="${m.id}">ส่งภารกิจ / ทำเสร็จแล้ว</button>`}
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title" style="margin-top:0">ผู้เข้าร่วมทั้งหมด (${participants.length})</div>
+      <div class="grid-members" style="grid-template-columns:1fr 1fr 1fr;">
+        ${participants.map(u=>`<div style="text-align:center"><img class="avatar" style="width:44px;height:44px;border-radius:12px;" src="${u.photoURL||placeholderAvatar()}"><div style="font-size:10px;margin-top:3px;">${esc(u.stageName||u.nickname||'')}</div></div>`).join('') || `<div class="empty" style="grid-column:1/-1">ยังไม่มีผู้เข้าร่วม</div>`}
+      </div>
+    </div>
+  `, {title:'รายละเอียดภารกิจ'});
+}
+
+function pageEvents(){
+  return shell(`
+    ${state.events.map(ev=>`
+      <div class="card">
+        ${ev.posterURL?`<img class="poster" src="${ev.posterURL}">`:''}
+        <div style="font-weight:700;margin-top:10px;">${esc(ev.title)}</div>
+        <div class="muted" style="font-size:12px;margin-top:4px;">${esc(ev.duration||'')}</div>
+        <div style="font-size:13px;margin-top:6px;">${esc(ev.description||'')}</div>
+        ${ev.linkedMissionId ? `<button class="btn btn-sm" style="margin-top:10px;" data-action="goto-mission-from-event" data-id="${ev.linkedMissionId}">สมัครภารกิจที่เกี่ยวข้อง →</button>` : ''}
+      </div>
+    `).join('') || `<div class="empty">ยังไม่มีกิจกรรม</div>`}
+  `, {title:'กิจกรรม / แจ้งเตือน'});
+}
+
+function pageHistory(){
+  const p = state.profile||{};
+  return shell(`
+    <div class="section-title" style="margin-top:0">ประวัติภารกิจของฉัน</div>
+    <div id="myMissionHistory" class="card"><div class="empty">กำลังโหลด...</div></div>
+    <div class="section-title">ประวัติวงล้อของฉัน</div>
+    <div id="mySpinHistory" class="card"><div class="empty">กำลังโหลด...</div></div>
+  `, {title:'ประวัติของฉัน'});
+}
+async function loadHistoryInto(){
+  if(!state.user) return;
+  try{
+    const ms = await db.collection('missionHistory').where('uid','==',state.user.uid).orderBy('acceptedAt','desc').limit(30).get();
+    const el = document.getElementById('myMissionHistory');
+    if(el){
+      const rows = ms.docs.map(d=>{
+        const h = d.data(); const mm = state.missions.find(x=>x.id===h.missionId);
+        return `<div style="padding:8px 0;border-bottom:1px solid var(--line);font-size:12px;">
+          <div style="font-weight:600;">${esc(mm?mm.title:'ภารกิจ')}</div>
+          <div class="muted">รับ: ${fmtDate(h.acceptedAt)} · ส่ง: ${h.submittedAt?fmtDate(h.submittedAt):'ยังไม่ส่ง'} · ${esc(h.status||'')}</div>
+        </div>`;
+      }).join('');
+      el.innerHTML = rows || `<div class="empty">ยังไม่มีประวัติ</div>`;
+    }
+  }catch(e){ console.warn(e); }
+  try{
+    const sp = await db.collection('spinHistory').where('uid','==',state.user.uid).orderBy('at','desc').limit(30).get();
+    const el2 = document.getElementById('mySpinHistory');
+    if(el2){
+      const rows = sp.docs.map(d=>{
+        const h = d.data();
+        return `<div style="padding:8px 0;border-bottom:1px solid var(--line);font-size:12px;">
+          <div style="font-weight:600;">${esc(h.prize)}</div>
+          <div class="muted">${fmtDate(h.at)}</div>
+        </div>`;
+      }).join('');
+      el2.innerHTML = rows || `<div class="empty">ยังไม่มีประวัติ</div>`;
+    }
+  }catch(e){ console.warn(e); }
+}
+
+function pageWheel(){
+  const wheels = state.wheels;
+  const active = wheels.find(w=>w.id===state.activeWheelId) || wheels[0];
+  return shell(`
+    <div class="tabbar">
+      ${wheels.map(w=>`<button class="btn btn-sm ${active&&active.id===w.id?'btn-accent':''}" data-action="pick-wheel" data-id="${w.id}">${esc(w.name)}</button>`).join('') || ''}
+    </div>
+    ${active ? `
+    <div class="card" style="text-align:center;">
+      <div class="wheel-wrap">
+        <div class="wheel-pointer">▼</div>
+        <canvas id="wheelCanvas" width="280" height="280"></canvas>
+      </div>
+      <button class="btn btn-accent btn-block" id="spinBtn" data-id="${active.id}">หมุนวงล้อ</button>
+      <div id="spinResult" class="muted" style="margin-top:10px;font-size:13px;"></div>
+    </div>` : `<div class="empty">แอดมินยังไม่ได้ตั้งค่าวงล้อ</div>`}
+  `, {title:'วงล้อสุ่มของรางวัล'});
+}
+
+/* ---------------- Admin ---------------- */
+function pageAdmin(){
+  if(!state.adminAuthed) return shell(pageLoginAdminOnly(), {title:'เข้าสู่ระบบแอดมิน', back:false});
+  const tab = state.adminTab || 'site';
+  const tabs = [['site','ตั้งค่าเว็บไซต์'],['members','สมาชิก'],['cats','หมวดหมู่ภารกิจ'],['missions','ภารกิจ'],['events','กิจกรรม'],['wheels','วงล้อสุ่ม']];
+  return shell(`
+    <div class="tabbar">${tabs.map(([k,l])=>`<button class="btn btn-sm ${tab===k?'btn-accent':''}" data-action="admin-tab" data-tab="${k}">${l}</button>`).join('')}</div>
+    <div id="adminBody">${adminTabBody(tab)}</div>
+    <button class="btn btn-danger btn-block" style="margin-top:16px" data-action="admin-logout">ออกจากระบบแอดมิน</button>
+  `, {title:'หน้าแอดมิน', back:false});
+}
+function pageLoginAdminOnly(){
+  return `<div class="card">${adminLoginForm()}</div>`;
+}
+function adminTabBody(tab){
+  if(tab==='site'){
+    const c = state.siteConfig;
+    return `
+    <div class="card">
+      <label>ชื่อเว็บไซต์</label><input type="text" id="a_siteName" value="${esc(c.siteName)}">
+      <label>โลโก้</label>
+      <div class="row" style="margin-top:6px;">
+        ${c.logoURL?`<img src="${c.logoURL}" style="width:44px;height:44px;border-radius:10px;object-fit:cover">`:''}
+        <input type="file" id="a_logoFile" accept="image/*">
+      </div>
+      <label>สีธีมหลัก (Accent)</label><input type="color" id="a_accent" value="${c.accent||'#e7e5df'}" style="height:44px;padding:4px;">
+      <div class="divider"></div>
+      <div class="section-title" style="margin-top:0">เปลี่ยนบัญชีแอดมิน</div>
+      <label>Username</label><input type="text" id="a_adminUser" value="${esc(c.adminUser)}">
+      <label>Password</label><input type="text" id="a_adminPass" value="${esc(c.adminPass)}">
+      <button class="btn btn-accent btn-block" style="margin-top:14px;" data-action="save-site">บันทึกการตั้งค่า</button>
+    </div>`;
+  }
+  if(tab==='members'){
+    return `<div class="grid-members" style="grid-template-columns:1fr;">
+      ${state.allUsers.map(u=>`
+      <div class="card">
+        <div class="row">
+          <img class="avatar" src="${u.photoURL||placeholderAvatar()}">
+          <div style="flex:1">
+            <div style="font-weight:700;">${esc(u.stageName||u.nickname||'สมาชิก')}</div>
+            <div class="muted" style="font-size:12px;">UID ${esc(u.memberId)} · แต้ม ${u.points||0}</div>
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:10px;">
+          <div><label>แต้มสะสม</label><input type="number" class="m_points" data-id="${u.id}" value="${u.points||0}"></div>
+          <div><label>สถานะ</label>
+            <select class="m_status" data-id="${u.id}">
+              ${['ออนไลน์','ไม่ว่าง','ออฟไลน์'].map(s=>`<option ${u.status===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-sm" style="margin-top:10px;" data-action="save-member" data-id="${u.id}">บันทึกสมาชิกคนนี้</button>
+      </div>`).join('') || `<div class="empty">ยังไม่มีสมาชิก</div>`}
+    </div>`;
+  }
+  if(tab==='cats'){
+    return `
+    <div class="card">
+      <label>ชื่อหมวดหมู่ภารกิจใหม่</label>
+      <div class="row"><input type="text" id="newCatName"><button class="btn btn-sm" data-action="add-cat">เพิ่ม</button></div>
+    </div>
+    ${state.missionCats.map(c=>`<div class="card between"><div>${esc(c.name)}</div><button class="btn btn-sm btn-danger" data-action="del-cat" data-id="${c.id}">ลบ</button></div>`).join('')}
+    `;
+  }
+  if(tab==='missions'){
+    return `
+    <button class="btn btn-accent btn-block" data-action="new-mission">+ สร้างภารกิจใหม่</button>
+    ${state.missions.map(m=>`
+      <div class="card">
+        <div class="between"><div style="font-weight:700;">${esc(m.title)}</div>
+        <div class="row"><button class="btn btn-sm" data-action="edit-mission" data-id="${m.id}">แก้ไข</button><button class="btn btn-sm btn-danger" data-action="del-mission" data-id="${m.id}">ลบ</button></div></div>
+        <div class="muted" style="font-size:12px;">ผู้เข้าร่วม ${(m.participants||[]).length} คน</div>
+      </div>
+    `).join('') || `<div class="empty">ยังไม่มีภารกิจ</div>`}
+    `;
+  }
+  if(tab==='events'){
+    return `
+    <button class="btn btn-accent btn-block" data-action="new-event">+ สร้างกิจกรรมใหม่</button>
+    ${state.events.map(ev=>`
+      <div class="card">
+        <div class="between"><div style="font-weight:700;">${esc(ev.title)}</div>
+        <div class="row"><button class="btn btn-sm" data-action="edit-event" data-id="${ev.id}">แก้ไข</button><button class="btn btn-sm btn-danger" data-action="del-event" data-id="${ev.id}">ลบ</button></div></div>
+      </div>
+    `).join('') || `<div class="empty">ยังไม่มีกิจกรรม</div>`}
+    `;
+  }
+  if(tab==='wheels'){
+    return `
+    <button class="btn btn-accent btn-block" data-action="new-wheel">+ สร้างวงล้อหมวดหมู่ใหม่</button>
+    ${state.wheels.map(w=>`
+      <div class="card">
+        <div class="between"><div style="font-weight:700;">${esc(w.name)}</div>
+        <div class="row"><button class="btn btn-sm" data-action="edit-wheel" data-id="${w.id}">แก้ไข</button><button class="btn btn-sm btn-danger" data-action="del-wheel" data-id="${w.id}">ลบ</button></div></div>
+        <div class="muted" style="font-size:12px;">${(w.prizes||[]).map(p=>p.name+' ('+p.pct+'%)').join(', ')}</div>
+      </div>
+    `).join('') || `<div class="empty">ยังไม่มีวงล้อ</div>`}
+    `;
+  }
+  return '';
+}
+
+function missionFormModal(existing){
+  const m = existing || {};
+  return `
+  <div class="modal-back" data-action="close-modal">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="between"><h3 style="margin:0">${existing?'แก้ไขภารกิจ':'สร้างภารกิจ'}</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
+      <form id="missionForm">
+        <label>โปสเตอร์ภารกิจ (แนะนำ 1546×423)</label>
+        ${m.posterURL?`<img class="poster" src="${m.posterURL}">`:''}
+        <input type="file" id="mi_poster" accept="image/*">
+        <label>ชื่อภารกิจ</label><input type="text" id="mi_title" value="${esc(m.title)}" required>
+        <label>รายละเอียดภารกิจ</label><textarea id="mi_desc">${esc(m.description)}</textarea>
+        <label>หมวดหมู่</label>
+        <select id="mi_cat"><option value="">- ไม่ระบุ -</option>${state.missionCats.map(c=>`<option value="${c.id}" ${m.categoryId===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
+        <div class="grid2">
+          <div><label>วันเริ่ม</label><input type="date" id="mi_start" value="${esc(m.startDate)}"></div>
+          <div><label>วันสิ้นสุด</label><input type="date" id="mi_end" value="${esc(m.endDate)}"></div>
+        </div>
+        <label>ประเภทของรางวัล</label>
+        <select id="mi_rewardType"><option value="points" ${m.rewardType==='points'?'selected':''}>แต้มสะสม</option><option value="custom" ${m.rewardType==='custom'?'selected':''}>กำหนดเอง</option></select>
+        <label>รายละเอียดของรางวัล / จำนวนแต้ม</label><input type="text" id="mi_rewardValue" value="${esc(m.rewardValue)}">
+        <label>ผู้เข้าร่วมได้ (ปล่อยว่าง = ทุกคน)</label>
+        <input type="text" id="mi_limit" placeholder="เช่น จำกัด 20 คน (บันทึกเป็นข้อความ)" value="${esc(m.participantLimitNote)}">
+        <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;" data-id="${m.id||''}">บันทึกภารกิจ</button>
+      </form>
+    </div>
+  </div>`;
+}
+function eventFormModal(existing){
+  const ev = existing || {};
+  return `
+  <div class="modal-back" data-action="close-modal">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="between"><h3 style="margin:0">${existing?'แก้ไขกิจกรรม':'สร้างกิจกรรม'}</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
+      <form id="eventForm">
+        <label>โปสเตอร์กิจกรรม (แนะนำ 1546×423)</label>
+        ${ev.posterURL?`<img class="poster" src="${ev.posterURL}">`:''}
+        <input type="file" id="ev_poster" accept="image/*">
+        <label>ชื่อกิจกรรม</label><input type="text" id="ev_title" value="${esc(ev.title)}" required>
+        <label>รายละเอียดกิจกรรม</label><textarea id="ev_desc">${esc(ev.description)}</textarea>
+        <label>ระยะเวลา</label><input type="text" id="ev_duration" placeholder="เช่น 1-3 พ.ย. 2569" value="${esc(ev.duration)}">
+        <label>ลิงก์ไปยังภารกิจ (ถ้ามี)</label>
+        <select id="ev_mission"><option value="">- ไม่เชื่อมโยง -</option>${state.missions.map(m=>`<option value="${m.id}" ${ev.linkedMissionId===m.id?'selected':''}>${esc(m.title)}</option>`).join('')}</select>
+        <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;" data-id="${ev.id||''}">บันทึกกิจกรรม</button>
+      </form>
+    </div>
+  </div>`;
+}
+function wheelFormModal(existing){
+  const w = existing || {name:'', prizes:[{name:'',pct:100}]};
+  return `
+  <div class="modal-back" data-action="close-modal">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="between"><h3 style="margin:0">${existing?'แก้ไขวงล้อ':'สร้างวงล้อ'}</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
+      <form id="wheelForm" data-id="${w.id||''}">
+        <label>ชื่อหมวดหมู่วงล้อ</label><input type="text" id="w_name" value="${esc(w.name)}" required>
+        <div id="prizeRows">
+          ${(w.prizes||[]).map((p,i)=>prizeRow(p,i)).join('')}
+        </div>
+        <button type="button" class="btn btn-sm" id="addPrizeRow" style="margin-top:8px;">+ เพิ่มของรางวัล</button>
+        <div class="hint">รวม % ของรางวัลควรเท่ากับ 100</div>
+        <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;">บันทึกวงล้อ</button>
+      </form>
+    </div>
+  </div>`;
+}
+function prizeRow(p,i){
+  return `<div class="row prizeRow" style="margin-top:8px;">
+    <input type="text" class="pz_name" placeholder="ชื่อของรางวัล" value="${esc(p.name)}" style="flex:2">
+    <input type="number" class="pz_pct" placeholder="%" value="${p.pct||0}" style="flex:1">
+    <button type="button" class="icon-btn" onclick="this.closest('.prizeRow').remove()">✕</button>
+  </div>`;
+}
+
+/* ---------------- render dispatcher ---------------- */
+function render(){
+  const [path, param] = state.route.split(':');
+  let html = '';
+  if(!state.user){
+    html = pageLogin();
+  } else {
+    switch(path){
+      case '#/profile': html = pageProfile(); break;
+      case '#/members': html = pageMembers(); break;
+      case '#/member': html = pageMemberView(param); break;
+      case '#/missions': html = pageMissions(); break;
+      case '#/mission': html = pageMissionView(param); break;
+      case '#/events': html = pageEvents(); break;
+      case '#/history': html = pageHistory(); break;
+      case '#/wheel': html = pageWheel(); break;
+      case '#/admin': html = pageAdmin(); break;
+      default: html = pageProfile();
+    }
+  }
+  app().innerHTML = html + (state.modal || '');
+  afterRender(path, param);
+}
+
+function afterRender(path, param){
+  if(path==='#/profile'){
+    const canvas = document.getElementById('radarMe');
+    if(canvas && window.Chart){
+      if(window.__meChart) window.__meChart.destroy();
+      window.__meChart = new Chart(canvas, radarConfigFor(state.profile.cosplayStyles));
+    }
+  }
+  if(path==='#/member'){
+    const u = state.allUsers.find(x=>x.id===param);
+    const canvas = document.getElementById('radarOther');
+    if(canvas && u && (u.privacy==='public' || (state.user&&state.user.uid===param)) && window.Chart){
+      if(window.__otherChart) window.__otherChart.destroy();
+      window.__otherChart = new Chart(canvas, radarConfigFor(u.cosplayStyles));
+    }
+  }
+  if(path==='#/history'){ loadHistoryInto(); }
+  if(path==='#/wheel'){ drawWheelCanvas(); }
+}
+
+/* ---------------- wheel drawing/spin ---------------- */
+function drawWheelCanvas(){
+  const wheels = state.wheels;
+  const active = wheels.find(w=>w.id===state.activeWheelId) || wheels[0];
+  const canvas = document.getElementById('wheelCanvas');
+  if(!canvas || !active) return;
+  const ctx = canvas.getContext('2d');
+  const prizes = (active.prizes||[]).filter(p=>p.pct>0);
+  const total = prizes.reduce((a,b)=>a+Number(b.pct||0),0) || 1;
+  let start = state.wheelRotation || 0;
+  function paint(rot){
+    ctx.clearRect(0,0,280,280);
+    ctx.save(); ctx.translate(140,140); ctx.rotate(rot);
+    let ang = -Math.PI/2;
+    const colors = ['#e7e5df','#c9c7c1','#9a9a95','#6d6d68','#4a4a46','#2e2e2b'];
+    prizes.forEach((p,i)=>{
+      const slice = (p.pct/total)*Math.PI*2;
+      ctx.beginPath(); ctx.moveTo(0,0);
+      ctx.arc(0,0,130,ang,ang+slice); ctx.closePath();
+      ctx.fillStyle = colors[i%colors.length]; ctx.fill();
+      ctx.strokeStyle = '#0a0a0a'; ctx.stroke();
+      ctx.save(); ctx.rotate(ang+slice/2); ctx.fillStyle='#0a0a0a'; ctx.font='11px Noto Sans Thai';
+      ctx.fillText((p.name||'').slice(0,10), 40, 4); ctx.restore();
+      ang += slice;
+    });
+    ctx.restore();
+  }
+  paint(start);
+  canvas.__paint = paint; canvas.__prizes = prizes; canvas.__total = total;
+}
+let spinning = false;
+async function doSpin(wheelId){
+  if(spinning) return; spinning = true;
+  const canvas = document.getElementById('wheelCanvas');
+  const resEl = document.getElementById('spinResult');
+  const prizes = canvas.__prizes, total = canvas.__total;
+  let r = Math.random()*total, acc=0, chosen=prizes[0], chosenIdx=0;
+  for(let i=0;i<prizes.length;i++){ acc+=Number(prizes[i].pct||0); if(r<=acc){chosen=prizes[i]; chosenIdx=i; break;} }
+  // compute target angle so pointer (top) lands mid-slice of chosen
+  let ang=0; for(let i=0;i<chosenIdx;i++) ang += (prizes[i].pct/total)*Math.PI*2;
+  const mid = ang + (prizes[chosenIdx].pct/total)*Math.PI; // slice midpoint from start(-90deg offset baked in paint)
+  const targetRot = Math.PI*2*6 - mid; // spin 6 extra turns, land so slice sits at top pointer
+  const startTime = performance.now(); const dur = 3200; const startRot = state.wheelRotation||0;
+  function frame(t){
+    const p = Math.min(1,(t-startTime)/dur);
+    const ease = 1-Math.pow(1-p,3);
+    const rot = startRot + (targetRot-startRot)*ease;
+    canvas.__paint(rot);
+    if(p<1) requestAnimationFrame(frame);
+    else{
+      state.wheelRotation = targetRot % (Math.PI*2);
+      spinning = false;
+      resEl.textContent = 'คุณได้รับ: ' + (chosen.name||'-');
+      toast('ยินดีด้วย! ได้ ' + (chosen.name||'-'));
+      if(state.user){
+        db.collection('spinHistory').add({uid:state.user.uid, wheelId, prize:chosen.name, at: firebase.firestore.FieldValue.serverTimestamp()}).catch(console.warn);
+      }
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------------- event delegation ---------------- */
+document.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if(e.target.id==='authForm'){
+    const email = $('#email').value, pass = $('#password').value;
+    const mode = document.querySelector('#authTabs .btn-accent').dataset.tab;
+    const errEl = $('#authErr');
+    try{
+      if(mode==='register') await auth.createUserWithEmailAndPassword(email, pass);
+      else await auth.signInWithEmailAndPassword(email, pass);
+    }catch(err){ errEl.textContent = translateAuthErr(err); }
+  }
+  if(e.target.id==='adminLoginForm'){
+    const u = $('#adminU').value, p = $('#adminP').value;
+    if(u===state.siteConfig.adminUser && p===state.siteConfig.adminPass){
+      state.adminAuthed = true; sessionStorage.setItem('hijime_admin','1');
+      nav('#/admin', false);
+      toast('เข้าสู่ระบบแอดมินสำเร็จ');
+    } else toast('Username หรือ Password ไม่ถูกต้อง');
+  }
+  if(e.target.id==='profileForm'){
+    const styles = {};
+    document.querySelectorAll('.stylept').forEach(inp=>{ styles[inp.dataset.style] = Number(inp.value||0); });
+    const upd = {
+      nickname: $('#f_nickname').value, stageName: $('#f_stageName').value, bio: $('#f_bio').value,
+      dob: $('#f_dob').value, joinDuration: $('#f_join').value, locationText: $('#f_loc').value,
+      privacy: $('#f_privacy').value, cosplayStyles: styles
+    };
+    const fileInput = document.getElementById('avatarFile');
+    if(fileInput.files[0]){
+      toast('กำลังอัปโหลดรูป...');
+      upd.photoURL = await uploadImage(fileInput.files[0], 'avatars/'+state.user.uid, 500);
+    }
+    await db.collection('users').doc(state.user.uid).update(upd);
+    state.profile = Object.assign(state.profile, upd);
+    state.modal = null; render(); toast('บันทึกโปรไฟล์แล้ว');
+  }
+  if(e.target.id==='portfolioForm'){
+    const file = document.getElementById('pf_file').files[0];
+    const cat = $('#pf_cat').value;
+    if(file){
+      toast('กำลังอัปโหลด...');
+      const url = await uploadImage(file, 'portfolio/'+state.user.uid, 900);
+      const portfolio = (state.profile.portfolio||[]).concat([{url, category:cat}]);
+      await db.collection('users').doc(state.user.uid).update({portfolio});
+      state.profile.portfolio = portfolio;
+    }
+    state.modal = null; render(); toast('เพิ่มผลงานแล้ว');
+  }
+  if(e.target.id==='missionForm'){
+    const id = e.target.querySelector('button[type=submit]').dataset.id;
+    let posterURL = state.editingMission?.posterURL || '';
+    const file = document.getElementById('mi_poster').files[0];
+    if(file){ toast('กำลังอัปโหลดโปสเตอร์...'); posterURL = await uploadImage(file, 'missions/poster', 1546); }
+    const data = {
+      title:$('#mi_title').value, description:$('#mi_desc').value, categoryId:$('#mi_cat').value,
+      startDate:$('#mi_start').value, endDate:$('#mi_end').value, rewardType:$('#mi_rewardType').value,
+      rewardValue:$('#mi_rewardValue').value, participantLimitNote:$('#mi_limit').value, posterURL
+    };
+    if(id){ await db.collection('missions').doc(id).update(data); }
+    else{ data.participants=[]; data.createdAt=firebase.firestore.FieldValue.serverTimestamp(); await db.collection('missions').add(data); }
+    await loadMissions(); state.modal=null; state.adminTab='missions'; render(); toast('บันทึกภารกิจแล้ว');
+  }
+  if(e.target.id==='eventForm'){
+    const id = e.target.querySelector('button[type=submit]').dataset.id;
+    let posterURL = state.editingEvent?.posterURL || '';
+    const file = document.getElementById('ev_poster').files[0];
+    if(file){ toast('กำลังอัปโหลดโปสเตอร์...'); posterURL = await uploadImage(file, 'events/poster', 1546); }
+    const data = { title:$('#ev_title').value, description:$('#ev_desc').value, duration:$('#ev_duration').value,
+      linkedMissionId: $('#ev_mission').value || null, posterURL };
+    if(id){ await db.collection('events').doc(id).update(data); }
+    else{ data.createdAt=firebase.firestore.FieldValue.serverTimestamp(); await db.collection('events').add(data); }
+    await loadEvents(); state.modal=null; state.adminTab='events'; render(); toast('บันทึกกิจกรรมแล้ว');
+  }
+  if(e.target.id==='wheelForm'){
+    const id = e.target.dataset.id;
+    const prizes = Array.from(document.querySelectorAll('.prizeRow')).map(row=>({
+      name: row.querySelector('.pz_name').value, pct: Number(row.querySelector('.pz_pct').value||0)
+    })).filter(p=>p.name);
+    const data = { name: $('#w_name').value, prizes };
+    if(id){ await db.collection('wheels').doc(id).update(data); }
+    else{ await db.collection('wheels').add(data); }
+    await loadWheels(); state.modal=null; state.adminTab='wheels'; render(); toast('บันทึกวงล้อแล้ว');
+  }
+});
+function translateAuthErr(err){
+  const m = {
+    'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว',
+    'auth/invalid-email':'อีเมลไม่ถูกต้อง',
+    'auth/weak-password':'รหัสผ่านสั้นเกินไป (อย่างน้อย 6 ตัว)',
+    'auth/wrong-password':'รหัสผ่านไม่ถูกต้อง',
+    'auth/user-not-found':'ไม่พบบัญชีนี้',
+    'auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
+  };
+  return m[err.code] || err.message;
+}
+
+document.addEventListener('click', async (e)=>{
+  const t = e.target.closest('[data-action]');
+  if(!t) return;
+  const action = t.dataset.action;
+
+  if(action==='back'){ back(); return; }
+  if(action==='goto'){ nav(t.dataset.route); return; }
+  if(action==='toggle-float'){ state.floatOpen = !state.floatOpen; render(); return; }
+  if(action==='close-modal'){ if(e.target===t){ state.modal=null; render(); } return; }
+  if(action==='logout'){ await auth.signOut(); return; }
+  if(action==='admin-logout'){ state.adminAuthed=false; sessionStorage.removeItem('hijime_admin'); nav('#/profile', false); return; }
+
+  if(action==='edit-profile'){ state.modal = editProfileModal(); render(); attachAuthTabHandlersIfNeeded(); return; }
+  if(action==='add-portfolio'){ state.modal = portfolioModal(); render(); return; }
+  if(action==='del-portfolio'){
+    const i = Number(t.dataset.i);
+    const portfolio = (state.profile.portfolio||[]).slice(); portfolio.splice(i,1);
+    await db.collection('users').doc(state.user.uid).update({portfolio});
+    state.profile.portfolio = portfolio; render(); toast('ลบผลงานแล้ว'); return;
+  }
+  if(action==='view-member'){ nav('#/member:'+t.dataset.id); return; }
+  if(action==='filter-mission'){ state.missionFilter = t.dataset.cat || null; render(); return; }
+  if(action==='view-mission'){ nav('#/mission:'+t.dataset.id); return; }
+  if(action==='goto-mission-from-event'){ nav('#/mission:'+t.dataset.id); return; }
+  if(action==='join-mission'){
+    const id = t.dataset.id;
+    const m = state.missions.find(x=>x.id===id);
+    const participants = (m.participants||[]).concat([state.user.uid]);
+    await db.collection('missions').doc(id).update({participants});
+    m.participants = participants;
+    await db.collection('missionHistory').add({uid:state.user.uid, missionId:id, acceptedAt:firebase.firestore.FieldValue.serverTimestamp(), status:'กำลังทำ'});
+    render(); toast('เข้าร่วมภารกิจแล้ว'); return;
+  }
+  if(action==='submit-mission'){
+    const id = t.dataset.id;
+    try{
+      const q = await db.collection('missionHistory').where('uid','==',state.user.uid).where('missionId','==',id).orderBy('acceptedAt','desc').limit(1).get();
+      if(!q.empty){
+        await q.docs[0].ref.update({submittedAt:firebase.firestore.FieldValue.serverTimestamp(), status:'ส่งแล้ว'});
+        toast('ส่งภารกิจแล้ว รอตรวจสอบ');
+      }
+    }catch(err){ console.warn(err); toast('ส่งภารกิจแล้ว'); }
+    return;
+  }
+  if(action==='pick-wheel'){ state.activeWheelId = t.dataset.id; state.wheelRotation=0; render(); return; }
+
+  // admin
+  if(action==='admin-tab'){ state.adminTab = t.dataset.tab; document.getElementById('adminBody').innerHTML = adminTabBody(state.adminTab); return; }
+  if(action==='save-site'){
+    const data = { siteName:$('#a_siteName').value, accent:$('#a_accent').value, adminUser:$('#a_adminUser').value, adminPass:$('#a_adminPass').value };
+    const file = document.getElementById('a_logoFile').files[0];
+    if(file){ toast('กำลังอัปโหลดโลโก้...'); data.logoURL = await uploadImage(file, 'site/logo', 300); }
+    await db.collection('siteConfig').doc('main').set(data, {merge:true});
+    state.siteConfig = Object.assign(state.siteConfig, data); applyTheme(); render(); toast('บันทึกการตั้งค่าแล้ว'); return;
+  }
+  if(action==='save-member'){
+    const id = t.dataset.id;
+    const points = Number(document.querySelector(`.m_points[data-id="${id}"]`).value||0);
+    const status = document.querySelector(`.m_status[data-id="${id}"]`).value;
+    await db.collection('users').doc(id).update({points, status});
+    const u = state.allUsers.find(x=>x.id===id); if(u){u.points=points; u.status=status;}
+    toast('บันทึกแล้ว'); return;
+  }
+  if(action==='add-cat'){
+    const name = document.getElementById('newCatName').value.trim();
+    if(!name) return;
+    await db.collection('missionCategories').add({name});
+    await loadMissionCats(); document.getElementById('adminBody').innerHTML = adminTabBody('cats'); return;
+  }
+  if(action==='del-cat'){ await db.collection('missionCategories').doc(t.dataset.id).delete(); await loadMissionCats(); document.getElementById('adminBody').innerHTML = adminTabBody('cats'); return; }
+  if(action==='new-mission'){ state.editingMission=null; state.modal = missionFormModal(null); render(); return; }
+  if(action==='edit-mission'){ const m = state.missions.find(x=>x.id===t.dataset.id); state.editingMission=m; state.modal = missionFormModal(m); render(); return; }
+  if(action==='del-mission'){ await db.collection('missions').doc(t.dataset.id).delete(); await loadMissions(); document.getElementById('adminBody').innerHTML = adminTabBody('missions'); return; }
+  if(action==='new-event'){ state.editingEvent=null; state.modal = eventFormModal(null); render(); return; }
+  if(action==='edit-event'){ const ev = state.events.find(x=>x.id===t.dataset.id); state.editingEvent=ev; state.modal = eventFormModal(ev); render(); return; }
+  if(action==='del-event'){ await db.collection('events').doc(t.dataset.id).delete(); await loadEvents(); document.getElementById('adminBody').innerHTML = adminTabBody('events'); return; }
+  if(action==='new-wheel'){ state.modal = wheelFormModal(null); render(); attachPrizeRowHandler(); return; }
+  if(action==='edit-wheel'){ const w = state.wheels.find(x=>x.id===t.dataset.id); state.modal = wheelFormModal(w); render(); attachPrizeRowHandler(); return; }
+  if(action==='del-wheel'){ await db.collection('wheels').doc(t.dataset.id).delete(); await loadWheels(); document.getElementById('adminBody').innerHTML = adminTabBody('wheels'); return; }
+
+  if(t.id==='spinBtn'){ doSpin(t.dataset.id); return; }
+});
+function attachPrizeRowHandler(){
+  const btn = document.getElementById('addPrizeRow');
+  if(btn) btn.addEventListener('click', ()=>{
+    document.getElementById('prizeRows').insertAdjacentHTML('beforeend', prizeRow({name:'',pct:0}));
+  });
+}
+document.addEventListener('click', (e)=>{
+  const tab = e.target.closest('#authTabs button');
+  if(tab){
+    document.querySelectorAll('#authTabs button').forEach(b=>{b.classList.remove('btn-accent');b.classList.add('btn-ghost');});
+    tab.classList.add('btn-accent'); tab.classList.remove('btn-ghost');
+    document.getElementById('authSubmit').textContent = tab.dataset.tab==='register' ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+  }
+});
+function attachAuthTabHandlersIfNeeded(){}
+
+/* ---------------- boot ---------------- */
+async function boot(){
+  await loadSiteConfig();
+  render();
+  auth.onAuthStateChanged(async ()=>{
+    if(state.user){
+      await Promise.all([loadAllUsers(), loadMissions(), loadMissionCats(), loadEvents(), loadWheels()]);
+      render();
+    }
+  });
+}
+boot();
+</script>
+</body>
+</html>
