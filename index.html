@@ -107,7 +107,7 @@ label{font-size:12px; color:var(--muted); display:block; margin:12px 0 6px;}
 .char-add-row{display:flex;gap:8px;margin-top:8px;}
 .char-add-row input{flex:1}
 .avatar{width:74px;height:74px;border-radius:22px;object-fit:cover;background:var(--surface2); border:1px solid var(--line);}
-.avatar-lg{width:104px;height:104px;border-radius:28px;}
+.avatar-lg{width:104px;height:104px;border-radius:28px;box-shadow:0 0 0 3px var(--bg),0 0 0 4px rgba(231,229,223,.35),0 8px 22px rgba(0,0,0,.4);}
 .muted{color:var(--muted)}
 .row{display:flex; align-items:center; gap:12px}
 .between{display:flex; align-items:center; justify-content:space-between}
@@ -166,8 +166,17 @@ label{font-size:12px; color:var(--muted); display:block; margin:12px 0 6px;}
   transition:transform .18s cubic-bezier(.2,.8,.2,1), border-color .18s;}
 .member-card:active{transform:scale(.95); border-color:#444;}
 .member-card img{width:56px;height:56px;border-radius:16px;object-fit:cover; margin-bottom:6px;}
-.wheel-wrap{position:relative; display:flex; justify-content:center; margin:10px 0;}
-.wheel-pointer{position:absolute; top:-6px; left:50%; transform:translateX(-50%); font-size:22px; z-index:5;}
+.wheel-wrap{position:relative; display:flex; justify-content:center; margin:14px 0 6px; filter:drop-shadow(0 12px 30px rgba(0,0,0,.5));}
+.wheel-pointer{position:absolute; top:-10px; left:50%; transform:translateX(-50%); z-index:5; width:26px; height:30px;}
+.wheel-hub{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:52px; height:52px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff, var(--accent) 60%); border:3px solid var(--bg); box-shadow:0 4px 14px rgba(0,0,0,.5); z-index:4;
+  display:flex;align-items:center;justify-content:center;font-size:18px;}
+.wheel-hub.spinning{animation:hubPulse .6s ease-in-out infinite;}
+@keyframes hubPulse{0%,100%{box-shadow:0 4px 14px rgba(0,0,0,.5)} 50%{box-shadow:0 4px 26px var(--accent)}}
+.wheel-legend{display:flex;flex-direction:column;gap:8px;margin-top:16px;text-align:left;}
+.wheel-legend .item{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;font-size:13px;}
+.wheel-legend .swatch{width:14px;height:14px;border-radius:4px;flex:none;border:1px solid rgba(255,255,255,.25);}
+.wheel-legend .pct{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;font-size:12px;}
 .empty{padding:40px 10px; text-align:center; color:var(--muted); font-size:13px;}
 .tag-input{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;}
 .tag-input .pill{cursor:pointer}
@@ -183,9 +192,41 @@ legend{padding:0 6px; font-size:12px; color:var(--muted);}
 .footer-admin{padding:30px 16px 50px; text-align:center;}
 .footer-admin summary{cursor:pointer; color:var(--muted); font-size:12px; list-style:none;}
 .footer-admin summary::-webkit-details-marker{display:none}
+
+/* ---- boot splash ---- */
+#bootSplash{position:fixed; inset:0; z-index:9999; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:14px; transition:opacity .35s ease, visibility .35s ease;}
+#bootSplash .boot-mark{width:56px;height:56px;border-radius:16px;background:linear-gradient(145deg,var(--accent),#8a8880);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:var(--accent-text);box-shadow:0 8px 24px rgba(0,0,0,.4); animation:hubPulse 1.4s ease-in-out infinite;}
+#bootSplash .spinner{border-color:#333;border-top-color:var(--muted);}
+#bootSplash.hide{opacity:0; visibility:hidden; pointer-events:none;}
+
+/* ---- stat card (total members etc.) ---- */
+.stat-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;}
+.stat-card{background:linear-gradient(160deg,var(--surface2),var(--surface)); border:1px solid var(--line); border-radius:16px; padding:14px; position:relative; overflow:hidden; animation:cardIn .4s cubic-bezier(.2,.8,.2,1) both;}
+.stat-card::after{content:'';position:absolute;top:-30%;right:-20%;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(231,229,223,.12),transparent 70%);}
+.stat-card .stat-num{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.01em;line-height:1.1;}
+.stat-card .stat-label{font-size:11.5px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:6px;}
+.stat-card .stat-icon{width:22px;height:22px;border-radius:7px;background:rgba(231,229,223,.12);display:flex;align-items:center;justify-content:center;color:var(--accent);flex:none;}
+.stat-icon svg{width:13px;height:13px;}
+
+/* ---- points badge ---- */
+.points-badge{display:inline-flex; align-items:center; gap:8px; padding:8px 14px 8px 10px; border-radius:14px;
+  background:linear-gradient(135deg,#3a3320,#22201a 60%); border:1px solid #4a3f24; position:relative; overflow:hidden;}
+.points-badge::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,224,150,.14) 50%,transparent 70%); background-size:220% 100%; animation:pointsShine 3.2s ease-in-out infinite;}
+@keyframes pointsShine{0%{background-position:140% 0} 100%{background-position:-40% 0}}
+.points-badge .coin{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9b0,#d8a83c 65%,#a97e22);display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;box-shadow:0 2px 6px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.25);}
+.points-badge .amt{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;color:#ffe6ad;letter-spacing:.02em;position:relative;z-index:1;}
+.points-badge .lbl{font-size:10.5px;color:#c9b27f;position:relative;z-index:1;margin-top:1px;}
+.points-badge.sm{padding:4px 10px 4px 6px;border-radius:10px;gap:6px;}
+.points-badge.sm .coin{width:18px;height:18px;font-size:9px;}
+.points-badge.sm .amt{font-size:12.5px;}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:44px;}
+.pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:8px;border:none;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;}
+.pw-toggle:hover{color:var(--text);}
 </style>
 </head>
 <body>
+<div id="bootSplash"><div class="boot-mark">H</div><div class="spinner"></div></div>
 <div id="frame">
   <div id="app"></div>
 </div>
@@ -302,51 +343,73 @@ async function loadProfile(uid){
   return null;
 }
 async function loadAllUsers(){
-  const snap = await db.collection('users').get();
-  state.allUsers = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  try{
+    const snap = await db.collection('users').get();
+    state.allUsers = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadAllUsers failed', e); }
 }
 async function loadMissions(){
-  const snap = await db.collection('missions').orderBy('createdAt','desc').get();
-  state.missions = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  try{
+    const snap = await db.collection('missions').orderBy('createdAt','desc').get();
+    state.missions = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadMissions failed', e); }
 }
 async function loadMissionCats(){
-  const snap = await db.collection('missionCategories').get();
-  state.missionCats = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  try{
+    const snap = await db.collection('missionCategories').get();
+    state.missionCats = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadMissionCats failed', e); }
 }
 async function loadEvents(){
-  const snap = await db.collection('events').orderBy('createdAt','desc').get();
-  state.events = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  try{
+    const snap = await db.collection('events').orderBy('createdAt','desc').get();
+    state.events = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadEvents failed', e); }
 }
 async function loadWheels(){
-  const snap = await db.collection('wheels').get();
-  state.wheels = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  try{
+    const snap = await db.collection('wheels').get();
+    state.wheels = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadWheels failed', e); }
 }
 async function loadPosts(){
-  const snap = await db.collection('posts').orderBy('createdAt','desc').get();
-  state.posts = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  try{
+    const snap = await db.collection('posts').orderBy('createdAt','desc').get();
+    state.posts = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadPosts failed', e); }
 }
 
 /* ---------------- auth ---------------- */
 auth.onAuthStateChanged(async (u)=>{
   state.user = u;
-  if(u){
-    state.profile = await loadProfile(u.uid);
-    if(!state.profile){
-      const data = {
-        memberId: uid8(), nickname:'', stageName:'', bio:'', dob:'', joinDuration:'',
-        cosplayStyles:{}, locationText:'', lat:null, lng:null, points:0, photoURL:'',
-        phone:'', contactLink:'', characters:[],
-        portfolio:[], privacy:'private', status:'ออนไลน์', createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      await db.collection('users').doc(u.uid).set(data);
-      state.profile = {id:u.uid, ...data};
+  try{
+    if(u){
+      state.profile = await loadProfile(u.uid);
+      if(!state.profile){
+        const data = {
+          memberId: uid8(), nickname:'', stageName:'', bio:'', dob:'', joinDuration:'',
+          cosplayStyles:{}, locationText:'', lat:null, lng:null, points:0, photoURL:'',
+          phone:'', contactLink:'', characters:[],
+          portfolio:[], privacy:'private', status:'ออนไลน์', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        await db.collection('users').doc(u.uid).set(data);
+        state.profile = {id:u.uid, ...data};
+      }
+      if(state.route === '#/login') state.route = '#/profile';
+    } else {
+      state.profile = null;
+      state.route = '#/login';
     }
-    if(state.route === '#/login') state.route = '#/profile';
-  } else {
-    state.profile = null;
-    state.route = '#/login';
+  }catch(err){
+    console.error('[hijime] auth state load failed', err);
+    toast('โหลดข้อมูลผู้ใช้ไม่สำเร็จ กรุณาลองใหม่');
   }
   render();
+  // load the rest of the app's shared data (non-blocking, each collection isolated so one failure doesn't break the rest)
+  if(u){
+    await Promise.allSettled([loadAllUsers(), loadMissions(), loadMissionCats(), loadEvents(), loadWheels(), loadPosts()]);
+    render();
+  }
 });
 
 /* ---------------- top bar / shell ---------------- */
@@ -462,11 +525,10 @@ function adminLoginForm(){
 
 function pageProfile(){
   const p = state.profile || {};
-  const styles = p.cosplayStyles || {};
   return shell(`
     <div class="card">
       <div class="row">
-        <img class="avatar avatar-lg" src="${p.photoURL || placeholderAvatar()}">
+        <img class="avatar avatar-lg" src="${esc(p.photoURL)||placeholderAvatar()}">
         <div style="flex:1">
           <div style="font-weight:700;font-size:18px;">${esc(p.stageName||p.nickname||'ตั้งชื่อในวงการ')}</div>
           <div class="muted" style="font-size:13px;">${esc(p.nickname||'')}</div>
@@ -474,7 +536,7 @@ function pageProfile(){
         </div>
       </div>
       <div class="between" style="margin-top:14px;">
-        <div class="pill">แต้มสะสม: <b style="margin-left:4px;color:var(--text)">${p.points||0}</b></div>
+        <div class="points-badge"><div class="coin">🪙</div><div><div class="amt">${Number(p.points||0).toLocaleString('th-TH')}</div><div class="lbl">แต้มสะสม</div></div></div>
         <button class="btn btn-sm" data-action="edit-profile">แก้ไขโปรไฟล์</button>
       </div>
     </div>
@@ -513,7 +575,7 @@ function pageProfile(){
       <div class="grid-members" style="margin-top:10px;grid-template-columns:1fr 1fr 1fr;">
         ${(p.portfolio||[]).map((it,i)=>`
           <div style="position:relative">
-            <img src="${it.url}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line)">
+            <img src="${esc(it.url)}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line)">
             <div class="muted" style="font-size:10px;margin-top:3px;text-align:center;">${esc(it.category||'')}</div>
             <button data-action="del-portfolio" data-i="${i}" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:50%;width:20px;height:20px;font-size:12px;">✕</button>
           </div>
@@ -557,7 +619,7 @@ function editProfileModal(){
       <div class="between"><h3 style="margin:0">แก้ไขโปรไฟล์</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
       <form id="profileForm">
         <div style="text-align:center;margin:14px 0;">
-          <img id="avatarPreview" class="avatar avatar-lg" src="${p.photoURL||placeholderAvatar()}" style="cursor:pointer">
+          <img id="avatarPreview" class="avatar avatar-lg" src="${esc(p.photoURL)||placeholderAvatar()}" style="cursor:pointer">
           <div><label class="btn btn-sm" style="margin-top:8px;display:inline-flex;">เปลี่ยนรูปโปรไฟล์<input type="file" id="avatarFile" accept="image/*" style="display:none"></label></div>
         </div>
         <label>ชื่อเล่น</label><input type="text" id="f_nickname" value="${esc(p.nickname)}">
@@ -612,14 +674,27 @@ function portfolioModal(){
 
 function pageMembers(){
   const users = state.allUsers;
+  const publicCount = users.filter(u=>u.privacy==='public').length;
+  const onlineCount = users.filter(u=>(u.status||'').includes('ออนไลน์')).length;
   return shell(`
-    <div class="section-title" style="margin-top:0">สมาชิกทั้งหมด (${users.length})</div>
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num badge-num">${users.length.toLocaleString('th-TH')}</div>
+        <div class="stat-label"><span class="stat-icon">${ICONS.users}</span>สมาชิกทั้งหมด</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num badge-num">${onlineCount.toLocaleString('th-TH')}</div>
+        <div class="stat-label"><span class="dot online"></span>ออนไลน์ตอนนี้</div>
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:0">รายชื่อสมาชิก (${users.length}) · สาธารณะ ${publicCount}</div>
     <div class="grid-members">
       ${users.map(u=>`
         <div class="member-card" data-action="view-member" data-id="${u.id}" style="cursor:pointer">
-          <img src="${u.photoURL||placeholderAvatar()}">
+          <img src="${esc(u.photoURL)||placeholderAvatar()}">
           <div style="font-weight:600;font-size:13px;">${esc(u.stageName||u.nickname||'สมาชิก')}</div>
           <div class="muted" style="font-size:11px;">UID ${esc(u.memberId||'')}</div>
+          <div class="points-badge sm" style="margin-top:6px;"><div class="coin">🪙</div><div class="amt">${Number(u.points||0).toLocaleString('th-TH')}</div></div>
           <div class="pill" style="margin-top:6px;font-size:10px;">${u.privacy==='public'?'สาธารณะ':'ส่วนตัว'}</div>
         </div>
       `).join('') || `<div class="empty">ยังไม่มีสมาชิก</div>`}
@@ -635,13 +710,14 @@ function pageMemberView(id){
   return shell(`
     <div class="card">
       <div class="row">
-        <img class="avatar avatar-lg" src="${u.photoURL||placeholderAvatar()}">
+        <img class="avatar avatar-lg" src="${esc(u.photoURL)||placeholderAvatar()}">
         <div>
           <div style="font-weight:700;font-size:18px;">${esc(u.stageName||u.nickname||'สมาชิก')}</div>
           <div class="muted" style="font-size:13px;">${esc(u.nickname||'')}</div>
           <div class="badge-num muted" style="font-size:12px;margin-top:4px;">UID ${esc(u.memberId||'')}</div>
         </div>
       </div>
+      ${canView ? `<div class="points-badge" style="margin-top:12px;"><div class="coin">🪙</div><div><div class="amt">${Number(u.points||0).toLocaleString('th-TH')}</div><div class="lbl">แต้มสะสม</div></div></div>` : ''}
     </div>
     ${canView ? `
     ${(u.characters&&u.characters.length) ? `
@@ -668,7 +744,7 @@ function pageMemberView(id){
     <div class="card">
       <div class="between"><div class="section-title" style="margin:0">ผลงาน</div><button class="btn btn-sm" data-action="goto" data-route="#/feed:${u.id}">ดูโพสต์ทั้งหมด →</button></div>
       <div class="grid-members" style="grid-template-columns:1fr 1fr 1fr;margin-top:10px;">
-        ${(u.portfolio||[]).map(it=>`<div><img src="${it.url}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line)"><div class="muted" style="font-size:10px;text-align:center;">${esc(it.category||'')}</div></div>`).join('') || `<div class="empty" style="grid-column:1/-1">ไม่มีผลงาน</div>`}
+        ${(u.portfolio||[]).map(it=>`<div><img src="${esc(it.url)}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;border:1px solid var(--line)"><div class="muted" style="font-size:10px;text-align:center;">${esc(it.category||'')}</div></div>`).join('') || `<div class="empty" style="grid-column:1/-1">ไม่มีผลงาน</div>`}
       </div>
     </div>
     ` : `<div class="card empty">โปรไฟล์นี้เป็นส่วนตัว เจ้าของยังไม่อนุญาตให้ดูข้อมูล</div>`}
@@ -687,7 +763,7 @@ function pageMissions(){
       const joined = (m.participants||[]).includes(state.user?.uid);
       return `
       <div class="card" data-action="view-mission" data-id="${m.id}" style="cursor:pointer">
-        ${m.posterURL?`<img class="poster" src="${m.posterURL}">`:''}
+        ${m.posterURL?`<img class="poster" src="${esc(m.posterURL)}">`:''}
         <div class="between" style="margin-top:10px;">
           <div style="font-weight:700;">${esc(m.title)}</div>
           ${cat?`<span class="pill">${esc(cat.name)}</span>`:''}
@@ -711,7 +787,7 @@ function pageMissionView(id){
   const participants = (m.participants||[]).map(pid=>state.allUsers.find(u=>u.id===pid)).filter(Boolean);
   return shell(`
     <div class="card">
-      ${m.posterURL?`<img class="poster" src="${m.posterURL}">`:''}
+      ${m.posterURL?`<img class="poster" src="${esc(m.posterURL)}">`:''}
       <div style="font-weight:700;font-size:18px;margin-top:10px;">${esc(m.title)}</div>
       ${cat?`<span class="pill" style="margin-top:6px;">${esc(cat.name)}</span>`:''}
       <div class="muted" style="font-size:12px;margin-top:8px;">ระยะเวลา: ${esc(m.startDate||'')} - ${esc(m.endDate||'')}</div>
@@ -726,7 +802,7 @@ function pageMissionView(id){
     <div class="card">
       <div class="section-title" style="margin-top:0">ผู้เข้าร่วมทั้งหมด (${participants.length})</div>
       <div class="grid-members" style="grid-template-columns:1fr 1fr 1fr;">
-        ${participants.map(u=>`<div style="text-align:center"><img class="avatar" style="width:44px;height:44px;border-radius:12px;" src="${u.photoURL||placeholderAvatar()}"><div style="font-size:10px;margin-top:3px;">${esc(u.stageName||u.nickname||'')}</div></div>`).join('') || `<div class="empty" style="grid-column:1/-1">ยังไม่มีผู้เข้าร่วม</div>`}
+        ${participants.map(u=>`<div style="text-align:center"><img class="avatar" style="width:44px;height:44px;border-radius:12px;" src="${esc(u.photoURL)||placeholderAvatar()}"><div style="font-size:10px;margin-top:3px;">${esc(u.stageName||u.nickname||'')}</div></div>`).join('') || `<div class="empty" style="grid-column:1/-1">ยังไม่มีผู้เข้าร่วม</div>`}
       </div>
     </div>
   `, {title:'รายละเอียดภารกิจ'});
@@ -736,7 +812,7 @@ function pageEvents(){
   return shell(`
     ${state.events.map(ev=>`
       <div class="card">
-        ${ev.posterURL?`<img class="poster" src="${ev.posterURL}">`:''}
+        ${ev.posterURL?`<img class="poster" src="${esc(ev.posterURL)}">`:''}
         <div style="font-weight:700;margin-top:10px;">${esc(ev.title)}</div>
         <div class="muted" style="font-size:12px;margin-top:4px;">${esc(ev.duration||'')}</div>
         <div style="font-size:13px;margin-top:6px;">${esc(ev.description||'')}</div>
@@ -790,6 +866,8 @@ async function loadHistoryInto(){
 function pageWheel(){
   const wheels = state.wheels;
   const active = wheels.find(w=>w.id===state.activeWheelId) || wheels[0];
+  const palette = ['#e7e5df','#c9a24f','#7fae7a','#6d93c9','#c96d7f','#9a9a95','#c9c7c1','#8a7dc9'];
+  const prizes = active ? (active.prizes||[]).filter(p=>p.pct>0) : [];
   return shell(`
     <div class="tabbar">
       ${wheels.map(w=>`<button class="btn btn-sm ${active&&active.id===w.id?'btn-accent':''}" data-action="pick-wheel" data-id="${w.id}">${esc(w.name)}</button>`).join('') || ''}
@@ -797,11 +875,15 @@ function pageWheel(){
     ${active ? `
     <div class="card" style="text-align:center;">
       <div class="wheel-wrap">
-        <div class="wheel-pointer">▼</div>
-        <canvas id="wheelCanvas" width="280" height="280"></canvas>
+        <svg class="wheel-pointer" viewBox="0 0 26 30"><path d="M13 30 L2 8 Q2 0 13 0 Q24 0 24 8 Z" fill="var(--accent)" stroke="var(--bg)" stroke-width="2"/></svg>
+        <canvas id="wheelCanvas" width="300" height="300" style="max-width:100%;height:auto;"></canvas>
+        <div class="wheel-hub" id="wheelHub">🎯</div>
       </div>
-      <button class="btn btn-accent btn-block" id="spinBtn" data-id="${active.id}">หมุนวงล้อ</button>
-      <div id="spinResult" class="muted" style="margin-top:10px;font-size:13px;"></div>
+      <button class="btn btn-accent btn-block" data-action="spin" data-id="${active.id}" id="spinBtn" style="margin-top:6px;">หมุนวงล้อ</button>
+      <div id="spinResult" class="muted" style="margin-top:10px;font-size:13px;min-height:18px;"></div>
+      <div class="wheel-legend">
+        ${prizes.map((p,i)=>`<div class="item"><span class="swatch" style="background:${palette[i%palette.length]}"></span><span>${esc(p.name||'-')}</span><span class="pct">${p.pct}%</span></div>`).join('') || `<div class="empty">ยังไม่มีของรางวัลในวงล้อนี้</div>`}
+      </div>
     </div>` : `<div class="empty">แอดมินยังไม่ได้ตั้งค่าวงล้อ</div>`}
   `, {title:'วงล้อสุ่มของรางวัล'});
 }
@@ -814,7 +896,7 @@ function pagePosts(filterUid){
     <button class="btn btn-accent btn-block" data-action="add-post">+ โพสต์ผลงานใหม่</button>
     ${filterUser ? `
     <div class="between card" style="margin-top:12px;">
-      <div class="row"><img class="avatar" style="width:36px;height:36px;border-radius:10px;" src="${filterUser.photoURL||placeholderAvatar()}"><div style="font-size:13px;">ผลงานของ <b>${esc(filterUser.stageName||filterUser.nickname||'สมาชิก')}</b></div></div>
+      <div class="row"><img class="avatar" style="width:36px;height:36px;border-radius:10px;" src="${esc(filterUser.photoURL)||placeholderAvatar()}"><div style="font-size:13px;">ผลงานของ <b>${esc(filterUser.stageName||filterUser.nickname||'สมาชิก')}</b></div></div>
       <button class="btn btn-sm" data-action="goto" data-route="#/feed">ดูทั้งหมด</button>
     </div>` : ''}
     <div style="margin-top:12px;">
@@ -833,7 +915,7 @@ function postCard(p){
   <div class="card">
     <div class="between">
       <div class="row" style="cursor:pointer" data-action="view-member" data-id="${p.uid}">
-        <img class="avatar" style="width:38px;height:38px;border-radius:12px;" src="${(author&&author.photoURL)||placeholderAvatar()}">
+        <img class="avatar" style="width:38px;height:38px;border-radius:12px;" src="${esc(author&&author.photoURL)||placeholderAvatar()}">
         <div>
           <div style="font-weight:600;font-size:13px;">${esc((author&&(author.stageName||author.nickname))||'สมาชิก')}</div>
           <div class="muted" style="font-size:11px;">${p.createdAt?fmtDate(p.createdAt):''}</div>
@@ -843,7 +925,7 @@ function postCard(p){
     </div>
     ${p.category?`<div style="margin-top:10px;"><span class="pill">${esc(p.category)}</span></div>`:''}
     ${p.caption?`<div style="font-size:14px;margin-top:8px;white-space:pre-wrap;">${esc(p.caption)}</div>`:''}
-    ${p.imageURL?`<img src="${p.imageURL}" style="width:100%;border-radius:14px;margin-top:10px;border:1px solid var(--line);max-height:420px;object-fit:cover;">`:''}
+    ${p.imageURL?`<img src="${esc(p.imageURL)}" style="width:100%;border-radius:14px;margin-top:10px;border:1px solid var(--line);max-height:420px;object-fit:cover;">`:''}
     ${p.locationText?`<div class="row muted" style="font-size:12px;margin-top:10px;">${ICONS.pin}<span>${esc(p.locationText)}</span>${(p.lat&&p.lng)?`<a href="https://www.google.com/maps?q=${p.lat},${p.lng}" target="_blank" rel="noopener" style="margin-left:auto;text-decoration:underline;">แผนที่</a>`:''}</div>`:''}
     <div class="divider"></div>
     <div class="row" style="gap:18px;">
@@ -859,7 +941,7 @@ function postCard(p){
     <div>
       ${comments.map(c=>`
         <div class="row" style="align-items:flex-start;margin-bottom:8px;">
-          <img class="avatar" style="width:26px;height:26px;border-radius:8px;flex:none;" src="${c.photoURL||placeholderAvatar()}">
+          <img class="avatar" style="width:26px;height:26px;border-radius:8px;flex:none;" src="${esc(c.photoURL)||placeholderAvatar()}">
           <div style="font-size:12.5px;"><b>${esc(c.name||'สมาชิก')}</b><div class="muted" style="font-size:11.5px;">${esc(c.text)}</div></div>
         </div>
       `).join('') || `<div class="muted" style="font-size:12px;">ยังไม่มีความคิดเห็น</div>`}
@@ -926,27 +1008,44 @@ function adminTabBody(tab){
       <label>ชื่อเว็บไซต์</label><input type="text" id="a_siteName" value="${esc(c.siteName)}">
       <label>โลโก้</label>
       <div class="row" style="margin-top:6px;">
-        ${c.logoURL?`<img src="${c.logoURL}" style="width:44px;height:44px;border-radius:10px;object-fit:cover">`:''}
+        ${c.logoURL?`<img src="${esc(c.logoURL)}" style="width:44px;height:44px;border-radius:10px;object-fit:cover">`:''}
         <input type="file" id="a_logoFile" accept="image/*">
       </div>
       <label>สีธีมหลัก (Accent)</label><input type="color" id="a_accent" value="${c.accent||'#e7e5df'}" style="height:44px;padding:4px;">
       <div class="divider"></div>
       <div class="section-title" style="margin-top:0">เปลี่ยนบัญชีแอดมิน</div>
       <label>Username</label><input type="text" id="a_adminUser" value="${esc(c.adminUser)}">
-      <label>Password</label><input type="text" id="a_adminPass" value="${esc(c.adminPass)}">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="a_adminPass" value="${esc(c.adminPass)}">
+        <button type="button" class="pw-toggle" data-action="toggle-pw" data-target="a_adminPass">${ICONS.eye}</button>
+      </div>
       <button class="btn btn-accent btn-block" style="margin-top:14px;" data-action="save-site">บันทึกการตั้งค่า</button>
     </div>`;
   }
   if(tab==='members'){
-    return `<div class="grid-members" style="grid-template-columns:1fr;">
+    const totalPoints = state.allUsers.reduce((a,u)=>a+Number(u.points||0),0);
+    return `
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num badge-num">${state.allUsers.length.toLocaleString('th-TH')}</div>
+        <div class="stat-label"><span class="stat-icon">${ICONS.users}</span>สมาชิกทั้งหมด</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num badge-num">${totalPoints.toLocaleString('th-TH')}</div>
+        <div class="stat-label"><span class="stat-icon">🪙</span>แต้มสะสมรวมทั้งหมด</div>
+      </div>
+    </div>
+    <div class="grid-members" style="grid-template-columns:1fr;">
       ${state.allUsers.map(u=>`
       <div class="card">
         <div class="row">
-          <img class="avatar" src="${u.photoURL||placeholderAvatar()}">
+          <img class="avatar" src="${esc(u.photoURL)||placeholderAvatar()}">
           <div style="flex:1">
             <div style="font-weight:700;">${esc(u.stageName||u.nickname||'สมาชิก')}</div>
-            <div class="muted" style="font-size:12px;">UID ${esc(u.memberId)} · แต้ม ${u.points||0}</div>
+            <div class="muted" style="font-size:12px;">UID ${esc(u.memberId)}</div>
           </div>
+          <div class="points-badge sm"><div class="coin">🪙</div><div class="amt">${Number(u.points||0).toLocaleString('th-TH')}</div></div>
         </div>
         <div class="grid2" style="margin-top:10px;">
           <div><label>แต้มสะสม</label><input type="number" class="m_points" data-id="${u.id}" value="${u.points||0}"></div>
@@ -971,7 +1070,7 @@ function adminTabBody(tab){
           </div>
           ${p.category?`<div class="muted" style="font-size:11px;margin-top:4px;">${esc(p.category)}</div>`:''}
           ${p.caption?`<div style="font-size:13px;margin-top:6px;">${esc(p.caption)}</div>`:''}
-          ${p.imageURL?`<img src="${p.imageURL}" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin-top:8px;">`:''}
+          ${p.imageURL?`<img src="${esc(p.imageURL)}" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin-top:8px;">`:''}
           <div class="muted" style="font-size:11px;margin-top:6px;">ไลก์ ${(p.likes||[]).length} · คอมเมนต์ ${(p.comments||[]).length}</div>
         </div>`;
       }).join('') || `<div class="empty">ยังไม่มีโพสต์ผลงาน</div>`}
@@ -981,9 +1080,16 @@ function adminTabBody(tab){
     return `
     <div class="card">
       <label>ชื่อหมวดหมู่ภารกิจใหม่</label>
-      <div class="row"><input type="text" id="newCatName"><button class="btn btn-sm" data-action="add-cat">เพิ่ม</button></div>
+      <div class="row"><input type="text" id="newCatName"><button class="btn btn-sm btn-accent" data-action="add-cat">เพิ่ม</button></div>
     </div>
-    ${state.missionCats.map(c=>`<div class="card between"><div>${esc(c.name)}</div><button class="btn btn-sm btn-danger" data-action="del-cat" data-id="${c.id}">ลบ</button></div>`).join('')}
+    ${state.missionCats.map(c=>`
+      <div class="card">
+        <div class="row">
+          <input type="text" class="cat_name" data-id="${c.id}" value="${esc(c.name)}" style="flex:1">
+          <button class="btn btn-sm" data-action="save-cat" data-id="${c.id}">บันทึก</button>
+          <button class="btn btn-sm btn-danger" data-action="del-cat" data-id="${c.id}">ลบ</button>
+        </div>
+      </div>`).join('') || `<div class="empty">ยังไม่มีหมวดหมู่</div>`}
     `;
   }
   if(tab==='missions'){
@@ -1032,7 +1138,7 @@ function missionFormModal(existing){
       <div class="between"><h3 style="margin:0">${existing?'แก้ไขภารกิจ':'สร้างภารกิจ'}</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
       <form id="missionForm">
         <label>โปสเตอร์ภารกิจ (แนะนำ 1546×423)</label>
-        ${m.posterURL?`<img class="poster" src="${m.posterURL}">`:''}
+        ${m.posterURL?`<img class="poster" src="${esc(m.posterURL)}">`:''}
         <input type="file" id="mi_poster" accept="image/*">
         <label>ชื่อภารกิจ</label><input type="text" id="mi_title" value="${esc(m.title)}" required>
         <label>รายละเอียดภารกิจ</label><textarea id="mi_desc">${esc(m.description)}</textarea>
@@ -1060,7 +1166,7 @@ function eventFormModal(existing){
       <div class="between"><h3 style="margin:0">${existing?'แก้ไขกิจกรรม':'สร้างกิจกรรม'}</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
       <form id="eventForm">
         <label>โปสเตอร์กิจกรรม (แนะนำ 1546×423)</label>
-        ${ev.posterURL?`<img class="poster" src="${ev.posterURL}">`:''}
+        ${ev.posterURL?`<img class="poster" src="${esc(ev.posterURL)}">`:''}
         <input type="file" id="ev_poster" accept="image/*">
         <label>ชื่อกิจกรรม</label><input type="text" id="ev_title" value="${esc(ev.title)}" required>
         <label>รายละเอียดกิจกรรม</label><textarea id="ev_desc">${esc(ev.description)}</textarea>
@@ -1158,28 +1264,50 @@ function afterRender(path, param){
 }
 
 /* ---------------- wheel drawing/spin ---------------- */
+const WHEEL_COLORS = ['#e7e5df','#c9a24f','#7fae7a','#6d93c9','#c96d7f','#9a9a95','#c9c7c1','#8a7dc9'];
+function wheelTextColor(hex){
+  const c = hex.replace('#','');
+  const r=parseInt(c.substr(0,2),16), g=parseInt(c.substr(2,2),16), b=parseInt(c.substr(4,2),16);
+  const luma = (0.299*r+0.587*g+0.114*b)/255;
+  return luma > 0.55 ? '#0a0a0a' : '#f2f2ef';
+}
 function drawWheelCanvas(){
   const wheels = state.wheels;
   const active = wheels.find(w=>w.id===state.activeWheelId) || wheels[0];
   const canvas = document.getElementById('wheelCanvas');
   if(!canvas || !active) return;
+  const size = 300, R = size/2 - 6;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = size*dpr; canvas.height = size*dpr;
+  canvas.style.width = size+'px'; canvas.style.height = size+'px';
   const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
   const prizes = (active.prizes||[]).filter(p=>p.pct>0);
   const total = prizes.reduce((a,b)=>a+Number(b.pct||0),0) || 1;
   let start = state.wheelRotation || 0;
   function paint(rot){
-    ctx.clearRect(0,0,280,280);
-    ctx.save(); ctx.translate(140,140); ctx.rotate(rot);
+    ctx.clearRect(0,0,size,size);
+    ctx.save(); ctx.translate(size/2,size/2);
+    // outer rim
+    ctx.beginPath(); ctx.arc(0,0,R+4,0,Math.PI*2); ctx.fillStyle='#0a0a0a'; ctx.fill();
+    ctx.rotate(rot);
     let ang = -Math.PI/2;
-    const colors = ['#e7e5df','#c9c7c1','#9a9a95','#6d6d68','#4a4a46','#2e2e2b'];
     prizes.forEach((p,i)=>{
       const slice = (p.pct/total)*Math.PI*2;
+      const color = WHEEL_COLORS[i%WHEEL_COLORS.length];
       ctx.beginPath(); ctx.moveTo(0,0);
-      ctx.arc(0,0,130,ang,ang+slice); ctx.closePath();
-      ctx.fillStyle = colors[i%colors.length]; ctx.fill();
-      ctx.strokeStyle = '#0a0a0a'; ctx.stroke();
-      ctx.save(); ctx.rotate(ang+slice/2); ctx.fillStyle='#0a0a0a'; ctx.font='11px Noto Sans Thai';
-      ctx.fillText((p.name||'').slice(0,10), 40, 4); ctx.restore();
+      ctx.arc(0,0,R,ang,ang+slice); ctx.closePath();
+      ctx.fillStyle = color; ctx.fill();
+      ctx.lineWidth=2; ctx.strokeStyle = '#0a0a0a'; ctx.stroke();
+      // label
+      ctx.save(); ctx.rotate(ang+slice/2);
+      ctx.textBaseline='middle'; ctx.fillStyle = wheelTextColor(color);
+      ctx.font = '700 13px Prompt, "Noto Sans Thai", sans-serif';
+      let label = (p.name||'').trim();
+      const maxChars = slice < 0.35 ? 8 : 14;
+      if(label.length>maxChars) label = label.slice(0,maxChars-1)+'…';
+      ctx.fillText(label, 30, 4, R-46);
+      ctx.restore();
       ang += slice;
     });
     ctx.restore();
@@ -1189,9 +1317,14 @@ function drawWheelCanvas(){
 }
 let spinning = false;
 async function doSpin(wheelId){
-  if(spinning) return; spinning = true;
+  if(spinning) return;
   const canvas = document.getElementById('wheelCanvas');
   const resEl = document.getElementById('spinResult');
+  const hub = document.getElementById('wheelHub');
+  if(!canvas || !canvas.__prizes || !canvas.__prizes.length){ toast('วงล้อนี้ยังไม่มีของรางวัล'); return; }
+  spinning = true;
+  if(hub) hub.classList.add('spinning');
+  resEl.textContent='';
   const prizes = canvas.__prizes, total = canvas.__total;
   let r = Math.random()*total, acc=0, chosen=prizes[0], chosenIdx=0;
   for(let i=0;i<prizes.length;i++){ acc+=Number(prizes[i].pct||0); if(r<=acc){chosen=prizes[i]; chosenIdx=i; break;} }
@@ -1199,7 +1332,7 @@ async function doSpin(wheelId){
   let ang=0; for(let i=0;i<chosenIdx;i++) ang += (prizes[i].pct/total)*Math.PI*2;
   const mid = ang + (prizes[chosenIdx].pct/total)*Math.PI; // slice midpoint from start(-90deg offset baked in paint)
   const targetRot = Math.PI*2*6 - mid; // spin 6 extra turns, land so slice sits at top pointer
-  const startTime = performance.now(); const dur = 3200; const startRot = state.wheelRotation||0;
+  const startTime = performance.now(); const dur = 3800; const startRot = state.wheelRotation||0;
   function frame(t){
     const p = Math.min(1,(t-startTime)/dur);
     const ease = 1-Math.pow(1-p,3);
@@ -1209,10 +1342,11 @@ async function doSpin(wheelId){
     else{
       state.wheelRotation = targetRot % (Math.PI*2);
       spinning = false;
+      if(hub) hub.classList.remove('spinning');
       resEl.textContent = 'คุณได้รับ: ' + (chosen.name||'-');
       toast('ยินดีด้วย! ได้ ' + (chosen.name||'-'));
       if(state.user){
-        db.collection('spinHistory').add({uid:state.user.uid, wheelId, prize:chosen.name, at: firebase.firestore.FieldValue.serverTimestamp()}).catch(console.warn);
+        db.collection('spinHistory').add({uid:state.user.uid, wheelId, prize:chosen.name, at: firebase.firestore.FieldValue.serverTimestamp()}).catch(err=>{ console.error(err); toast('บันทึกประวัติการหมุนไม่สำเร็จ'); });
       }
     }
   }
@@ -1356,6 +1490,11 @@ document.addEventListener('click', async (e)=>{
   if(action==='back'){ back(); return; }
   if(action==='goto'){ nav(t.dataset.route); return; }
   if(action==='toggle-float'){ state.floatOpen = !state.floatOpen; render(); return; }
+  if(action==='toggle-pw'){
+    const inp = document.getElementById(t.dataset.target);
+    if(inp){ inp.type = inp.type==='password' ? 'text' : 'password'; }
+    return;
+  }
   if(action==='close-modal'){ if(e.target===t){ state.modal=null; render(); } return; }
   if(action==='logout'){ await auth.signOut(); return; }
   if(action==='admin-logout'){ state.adminAuthed=false; sessionStorage.removeItem('hijime_admin'); nav('#/profile', false); return; }
@@ -1426,6 +1565,8 @@ document.addEventListener('click', async (e)=>{
   if(action==='join-mission'){
     const id = t.dataset.id;
     const m = state.missions.find(x=>x.id===id);
+    if(!m){ toast('ไม่พบภารกิจนี้'); return; }
+    if((m.participants||[]).includes(state.user.uid)){ toast('คุณเข้าร่วมภารกิจนี้แล้ว'); return; }
     const participants = (m.participants||[]).concat([state.user.uid]);
     await db.collection('missions').doc(id).update({participants});
     m.participants = participants;
@@ -1444,6 +1585,7 @@ document.addEventListener('click', async (e)=>{
     return;
   }
   if(action==='pick-wheel'){ state.activeWheelId = t.dataset.id; state.wheelRotation=0; render(); return; }
+  if(action==='spin'){ doSpin(t.dataset.id); return; }
 
   // admin
   if(action==='admin-tab'){
@@ -1477,6 +1619,13 @@ document.addEventListener('click', async (e)=>{
     await db.collection('missionCategories').add({name});
     await loadMissionCats(); document.getElementById('adminBody').innerHTML = adminTabBody('cats'); return;
   }
+  if(action==='save-cat'){
+    const id = t.dataset.id;
+    const name = document.querySelector(`.cat_name[data-id="${id}"]`).value.trim();
+    if(!name) return;
+    await db.collection('missionCategories').doc(id).update({name});
+    await loadMissionCats(); toast('บันทึกหมวดหมู่แล้ว'); return;
+  }
   if(action==='admin-del-post'){
     await db.collection('posts').doc(t.dataset.id).delete();
     await loadPosts(); document.getElementById('adminBody').innerHTML = adminTabBody('posts'); toast('ลบโพสต์แล้ว'); return;
@@ -1491,8 +1640,6 @@ document.addEventListener('click', async (e)=>{
   if(action==='new-wheel'){ state.modal = wheelFormModal(null); render(); attachPrizeRowHandler(); return; }
   if(action==='edit-wheel'){ const w = state.wheels.find(x=>x.id===t.dataset.id); state.modal = wheelFormModal(w); render(); attachPrizeRowHandler(); return; }
   if(action==='del-wheel'){ await db.collection('wheels').doc(t.dataset.id).delete(); await loadWheels(); document.getElementById('adminBody').innerHTML = adminTabBody('wheels'); return; }
-
-  if(t.id==='spinBtn'){ doSpin(t.dataset.id); return; }
 
   }catch(err){
     console.error('[hijime] action error:', action, err);
@@ -1519,13 +1666,12 @@ function attachAuthTabHandlersIfNeeded(){}
 async function boot(){
   await loadSiteConfig();
   render();
-  if(state.adminAuthed) await Promise.all([loadAllUsers(), loadPosts()]).then(render).catch(console.warn);
-  auth.onAuthStateChanged(async ()=>{
-    if(state.user){
-      await Promise.all([loadAllUsers(), loadMissions(), loadMissionCats(), loadEvents(), loadWheels(), loadPosts()]);
-      render();
-    }
-  });
+  if(state.adminAuthed){
+    await Promise.allSettled([loadAllUsers(), loadPosts()]);
+    render();
+  }
+  const splash = document.getElementById('bootSplash');
+  if(splash) splash.classList.add('hide');
 }
 boot();
 </script>
