@@ -1554,6 +1554,7 @@ function postCard(p){
       </button>
     </div>
     ${commentsOpen ? `
+    <div class="comment-section">
     <div class="divider"></div>
     <div>
       ${comments.map(c=>`
@@ -1566,6 +1567,7 @@ function postCard(p){
         <input type="text" id="commentInput-${p.id}" placeholder="เขียนความคิดเห็น..." style="flex:1;">
         <button class="btn btn-sm btn-accent" data-action="send-comment" data-id="${p.id}">ส่ง</button>
       </div>
+    </div>
     </div>` : ''}
   </div>`;
 }
@@ -2391,6 +2393,7 @@ document.addEventListener('click', async (e)=>{
   if(action==='add-post'){ state.modal = postFormModal(); window.__postGeo=null; render(); attachPostFormGeoHandler(); return; }
   if(action==='toggle-like'){
     const id = t.dataset.id;
+    if(!state.user){ toast('กรุณาเข้าสู่ระบบก่อน'); return; }
     const p = state.posts.find(x=>x.id===id); if(!p) return;
     const uid = state.user.uid;
     const liked = (p.likes||[]).includes(uid);
@@ -2402,20 +2405,93 @@ document.addEventListener('click', async (e)=>{
       p.likes = (p.likes||[]).concat([uid]);
       ref.update({likes: firebase.firestore.FieldValue.arrayUnion(uid)}).catch(console.warn);
     }
-    render(); return;
+    /* อัปเดตเฉพาะปุ่มไลค์ ไม่ re-render ทั้งหน้า เพื่อไม่ให้ comment input หาย */
+    const nowLiked = (p.likes||[]).includes(uid);
+    t.style.color = nowLiked ? 'var(--danger)' : 'var(--muted)';
+    t.innerHTML = (nowLiked ? ICONS.heartFill : ICONS.heart) + '<span>' + (p.likes||[]).length + '</span>';
+    return;
   }
-  if(action==='toggle-comments'){ const id=t.dataset.id; state.openComments[id] = !state.openComments[id]; render(); return; }
+  if(action==='toggle-comments'){
+    const id = t.dataset.id;
+    state.openComments[id] = !state.openComments[id];
+    const cardEl = t.closest('.card');
+    if(cardEl){
+      const existingSection = cardEl.querySelector('.comment-section');
+      if(existingSection){ existingSection.remove(); }
+      if(state.openComments[id]){
+        const post = state.posts.find(function(x){ return x.id===id; });
+        if(post){
+          const comments = post.comments||[];
+          const section = document.createElement('div');
+          section.className = 'comment-section';
+          let listHTML = '';
+          if(comments.length === 0){
+            listHTML = '<div style="font-size:12px;color:var(--muted);">ยังไม่มีความคิดเห็น</div>';
+          } else {
+            comments.forEach(function(c){
+              listHTML += '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;">'
+                + '<img style="width:26px;height:26px;border-radius:8px;flex:none;object-fit:cover;background:var(--surface2);border:1px solid var(--line);" src="' + (esc(c.photoURL)||placeholderAvatar()) + '">'
+                + '<div style="font-size:12.5px;"><b>' + esc(c.name||'สมาชิก') + '</b>'
+                + '<div style="font-size:11.5px;color:var(--muted);">' + esc(c.text) + '</div></div>'
+                + '</div>';
+            });
+          }
+          section.innerHTML = '<div style="height:1px;background:linear-gradient(90deg,transparent,var(--line) 15%,var(--line) 85%,transparent);margin:14px 0;"></div>'
+            + '<div>' + listHTML
+            + '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;">'
+            + '<input type="text" id="commentInput-' + id + '" placeholder="เขียนความคิดเห็น..." style="flex:1;padding:10px 14px;border-radius:13px;border:1px solid var(--line);background:linear-gradient(180deg,var(--bg2),var(--bg));color:var(--text);font-size:14px;outline:none;font-family:inherit;">'
+            + '<button class="btn btn-sm btn-accent" data-action="send-comment" data-id="' + id + '">ส่ง</button>'
+            + '</div></div>';
+          cardEl.appendChild(section);
+          const inp = section.querySelector('input');
+          if(inp) setTimeout(function(){ inp.focus(); }, 50);
+        }
+      }
+      const post2 = state.posts.find(function(x){ return x.id===id; });
+      const commentCount = post2 ? (post2.comments||[]).length : 0;
+      t.innerHTML = ICONS.comment + '<span>' + commentCount + '</span>';
+    } else {
+      render();
+    }
+    return;
+  }
   if(action==='send-comment'){
     const id = t.dataset.id;
+    if(!state.user){ toast('กรุณาเข้าสู่ระบบก่อน'); return; }
     const inp = document.getElementById('commentInput-'+id);
+    if(!inp){ toast('เกิดข้อผิดพลาด กรุณาลองใหม่'); return; }
     const text = (inp.value||'').trim();
-    if(!text) return;
+    if(!text){ inp.focus(); return; }
     const p = state.profile||{};
     const comment = {uid:state.user.uid, name:p.stageName||p.nickname||'สมาชิก', photoURL:p.photoURL||'', text, at: firebase.firestore.Timestamp.now()};
     const post = state.posts.find(x=>x.id===id); if(!post) return;
     post.comments = (post.comments||[]).concat([comment]);
     inp.value='';
-    render();
+    inp.focus();
+    /* เพิ่ม comment ใหม่เข้า DOM โดยตรง ไม่ re-render ทั้งหน้า */
+    const section = t.closest('.comment-section');
+    if(section){
+      const listArea = section.querySelector('div');
+      /* ลบ empty state ถ้ามี */
+      const emptyMsg = listArea.querySelector('div[style*="color:var(--muted)"]');
+      if(emptyMsg && !emptyMsg.querySelector('b')) emptyMsg.remove();
+      /* insert comment row ก่อน input row */
+      const inputRow = section.querySelector('.row');
+      const newRow = document.createElement('div');
+      newRow.style.cssText = 'display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;';
+      newRow.innerHTML = '<img style="width:26px;height:26px;border-radius:8px;flex:none;object-fit:cover;background:var(--surface2);border:1px solid var(--line);" src="' + (esc(comment.photoURL)||placeholderAvatar()) + '">'
+        + '<div style="font-size:12.5px;"><b>' + esc(comment.name) + '</b>'
+        + '<div style="font-size:11.5px;color:var(--muted);">' + esc(comment.text) + '</div></div>';
+      listArea.insertBefore(newRow, inputRow);
+      /* อัปเดต counter บนปุ่มคอมเมนต์ */
+      const card = section.closest('.card');
+      if(card){
+        const commentBtn = card.querySelector('[data-action="toggle-comments"]');
+        if(commentBtn) commentBtn.innerHTML = ICONS.comment + '<span>' + (post.comments||[]).length + '</span>';
+      }
+    } else {
+      render();
+    }
     db.collection('posts').doc(id).update({comments: firebase.firestore.FieldValue.arrayUnion(comment)}).catch(console.warn);
     return;
   }
