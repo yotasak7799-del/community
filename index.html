@@ -223,6 +223,47 @@ legend{padding:0 6px; font-size:12px; color:var(--muted);}
 .pw-wrap input{padding-right:44px;}
 .pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:8px;border:none;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;}
 .pw-toggle:hover{color:var(--text);}
+
+/* ---- Point (Discord) badge variant ---- */
+.points-badge.pt{background:linear-gradient(135deg,#20303a,#1a2226 60%); border-color:#28414f;}
+.points-badge.pt::before{background:linear-gradient(120deg,transparent 30%,rgba(150,210,255,.14) 50%,transparent 70%);}
+.points-badge.pt .coin{background:radial-gradient(circle at 35% 30%,#b7e3ff,#3ca0d8 65%,#1f6f9e);}
+.points-badge.pt .amt{color:#aee0ff;}
+.points-badge.pt .lbl{color:#7fb9d6;}
+
+/* ---- Level bar ---- */
+.level-card{display:flex; align-items:center; gap:12px; margin-top:12px;}
+.level-badge{flex:none; width:52px; height:52px; border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:linear-gradient(155deg,#3a3320,#20200f 65%); border:1px solid #4a3f24; box-shadow:0 4px 14px rgba(0,0,0,.4);}
+.level-badge .lv-num{font-size:17px; font-weight:800; color:#ffe6ad; line-height:1;}
+.level-badge .lv-lbl{font-size:8.5px; color:#c9b27f; letter-spacing:.06em; margin-top:2px;}
+.level-body{flex:1; min-width:0;}
+.level-top{display:flex; align-items:baseline; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-bottom:5px;}
+.level-top b{color:var(--text); font-size:12.5px;}
+.level-track{height:9px; border-radius:6px; background:var(--surface2); border:1px solid var(--line); overflow:hidden; position:relative;}
+.level-fill{height:100%; border-radius:6px; background:linear-gradient(90deg,#d8a83c,#ffe6ad); position:relative; transition:width .5s cubic-bezier(.2,.8,.2,1);}
+.level-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.5) 50%,transparent 70%); background-size:220% 100%; animation:pointsShine 2.6s ease-in-out infinite;}
+.level-max .level-fill{background:linear-gradient(90deg,#7fae7a,#c8e6c2);}
+.level-badge.lv-sm{width:34px;height:34px;border-radius:10px;}
+.level-badge.lv-sm .lv-num{font-size:12px;}
+.level-badge.lv-sm .lv-lbl{font-size:6.5px;}
+
+/* ---- Reward shop ---- */
+.reward-card{background:var(--surface2); border:1px solid var(--line); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px;}
+.reward-card img{width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:10px; background:var(--surface); border:1px solid var(--line);}
+.reward-name{font-weight:700; font-size:13.5px;}
+.reward-stock{font-size:10.5px; color:var(--muted);}
+.reward-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+/* ---- Discord schedule ---- */
+.sched-row{display:flex; align-items:center; gap:12px;}
+.sched-date{flex:none; width:52px; height:52px; border-radius:14px; background:var(--surface2); border:1px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center;}
+.sched-date .d{font-size:17px; font-weight:800; line-height:1;}
+.sched-date .m{font-size:9.5px; color:var(--muted); margin-top:2px;}
+.sched-status{font-size:11px; padding:5px 10px; border-radius:999px; background:var(--surface2); border:1px solid var(--line);}
+.sched-status.ontime{background:rgba(127,174,122,.15); border-color:#3f5a3c; color:#a9d6a3;}
+.sched-status.late{background:rgba(201,162,79,.15); border-color:#5a4c28; color:#e6c789;}
+.sched-status.done{background:rgba(255,255,255,.06); color:var(--muted);}
 </style>
 </head>
 <body>
@@ -305,11 +346,49 @@ const COSPLAY_STYLES = ["อนิเมะ/มังงะ","เกม","ออ
 /* ---------------- state ---------------- */
 let state = {
   user:null, profile:null, route:'#/login', stack:[],
-  siteConfig:{siteName:'Hijime', logoURL:'', accent:'#e7e5df', adminUser:'admin', adminPass:'test'},
+  siteConfig:{
+    siteName:'Hijime', logoURL:'', accent:'#e7e5df', adminUser:'admin', adminPass:'test',
+    levels:[], discordPtOnTime:2, discordPtLate:1, discordGraceMinutes:15
+  },
   adminAuthed: sessionStorage.getItem('hijime_admin')==='1',
   allUsers:[], missions:[], missionCats:[], events:[], wheels:[], posts:[],
+  rewards:[], discordSchedule:[], allRedemptions:[],
+  myRedemptions:[], myCheckins:[],
   floatOpen:false, openComments:{}
 };
+const DEFAULT_LEVELS = [
+  {name:'มือใหม่', gp:0}, {name:'หน้าใหม่', gp:50}, {name:'ตัวจริง', gp:150},
+  {name:'มืออาชีพ', gp:300}, {name:'ผู้เชี่ยวชาญ', gp:600}, {name:'ปรมาจารย์', gp:1000},
+  {name:'ตำนาน', gp:1600}, {name:'เทพเจ้า', gp:2500}
+];
+function getLevels(){
+  const arr = (state.siteConfig.levels && state.siteConfig.levels.length) ? state.siteConfig.levels : DEFAULT_LEVELS;
+  return arr.slice().sort((a,b)=>Number(a.gp||0)-Number(b.gp||0));
+}
+function levelInfo(gp){
+  gp = Number(gp||0);
+  const levels = getLevels();
+  let idx = 0;
+  for(let i=0;i<levels.length;i++){ if(gp >= Number(levels[i].gp||0)) idx = i; }
+  const cur = levels[idx];
+  const next = levels[idx+1] || null;
+  const curGp = Number(cur.gp||0);
+  const nextGp = next ? Number(next.gp||0) : null;
+  const pct = next ? Math.max(0,Math.min(100, ((gp-curGp)/(nextGp-curGp))*100 )) : 100;
+  return { level: idx+1, name: cur.name||('LV '+(idx+1)), gp, curGp, nextGp, pct, isMax: !next };
+}
+function levelBarHTML(gp, opts={}){
+  const info = levelInfo(gp);
+  const sm = opts.sm;
+  return `
+  <div class="level-card ${info.isMax?'level-max':''}">
+    <div class="level-badge ${sm?'lv-sm':''}"><div class="lv-num">LV${info.level}</div><div class="lv-lbl">${esc(info.name||'')}</div></div>
+    <div class="level-body">
+      <div class="level-top"><span>${esc(info.name||'')}</span><b>${info.isMax? 'เลเวลสูงสุด' : (info.gp+' / '+info.nextGp+' GP')}</b></div>
+      <div class="level-track"><div class="level-fill" style="width:${info.pct}%"></div></div>
+    </div>
+  </div>`;
+}
 
 function applyTheme(){
   document.documentElement.style.setProperty('--accent', state.siteConfig.accent || '#e7e5df');
@@ -378,6 +457,38 @@ async function loadPosts(){
     state.posts = snap.docs.map(d=>({id:d.id, ...d.data()}));
   }catch(e){ console.warn('loadPosts failed', e); }
 }
+async function loadRewards(){
+  try{
+    const snap = await db.collection('rewards').orderBy('createdAt','desc').get();
+    state.rewards = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadRewards failed', e); }
+}
+async function loadDiscordSchedule(){
+  try{
+    const snap = await db.collection('discordSchedule').orderBy('date','desc').get();
+    state.discordSchedule = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadDiscordSchedule failed', e); }
+}
+async function loadAllRedemptions(){
+  try{
+    const snap = await db.collection('redemptions').orderBy('at','desc').get();
+    state.allRedemptions = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadAllRedemptions failed', e); }
+}
+async function loadMyRedemptions(){
+  if(!state.user) return;
+  try{
+    const snap = await db.collection('redemptions').where('uid','==',state.user.uid).orderBy('at','desc').limit(30).get();
+    state.myRedemptions = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadMyRedemptions failed', e); }
+}
+async function loadMyCheckins(){
+  if(!state.user) return;
+  try{
+    const snap = await db.collection('discordCheckins').where('uid','==',state.user.uid).get();
+    state.myCheckins = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadMyCheckins failed', e); }
+}
 
 /* ---------------- auth ---------------- */
 auth.onAuthStateChanged(async (u)=>{
@@ -388,7 +499,7 @@ auth.onAuthStateChanged(async (u)=>{
       if(!state.profile){
         const data = {
           memberId: uid8(), nickname:'', stageName:'', bio:'', dob:'', joinDuration:'',
-          cosplayStyles:{}, locationText:'', lat:null, lng:null, points:0, photoURL:'',
+          cosplayStyles:{}, locationText:'', lat:null, lng:null, points:0, discordPoints:0, photoURL:'',
           phone:'', contactLink:'', characters:[],
           portfolio:[], privacy:'private', status:'ออนไลน์', createdAt: firebase.firestore.FieldValue.serverTimestamp()
         };
@@ -407,7 +518,7 @@ auth.onAuthStateChanged(async (u)=>{
   render();
   // load the rest of the app's shared data (non-blocking, each collection isolated so one failure doesn't break the rest)
   if(u){
-    await Promise.allSettled([loadAllUsers(), loadMissions(), loadMissionCats(), loadEvents(), loadWheels(), loadPosts()]);
+    await Promise.allSettled([loadAllUsers(), loadMissions(), loadMissionCats(), loadEvents(), loadWheels(), loadPosts(), loadRewards(), loadDiscordSchedule(), loadMyRedemptions(), loadMyCheckins()]);
     render();
   }
 });
@@ -444,7 +555,9 @@ const ICONS = {
   comment:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H8l-4 4V5z"/></svg>`,
   pin:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>`,
   phone:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg>`,
-  link:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14a5 5 0 007.5.5l2-2a5 5 0 00-7-7l-1.2 1.1"/><path d="M14 10a5 5 0 00-7.5-.5l-2 2a5 5 0 007 7l1.1-1.2"/></svg>`
+  link:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14a5 5 0 007.5.5l2-2a5 5 0 00-7-7l-1.2 1.1"/><path d="M14 10a5 5 0 00-7.5-.5l-2 2a5 5 0 007 7l1.1-1.2"/></svg>`,
+  gift:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M3 13h18"/><path d="M12 9v12"/><path d="M12 9C10 9 7.5 8 7.5 6a2.5 2.5 0 015 0V9"/><path d="M12 9c2 0 4.5-1 4.5-3a2.5 2.5 0 00-5 0V9"/></svg>`,
+  headset:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13a8 8 0 0116 0"/><rect x="2.5" y="13" width="5" height="7" rx="2"/><rect x="16.5" y="13" width="5" height="7" rx="2"/><path d="M20 20v1a3 3 0 01-3 3h-3"/></svg>`
 };
 function bottomNav(){
   const items = [
@@ -454,6 +567,8 @@ function bottomNav(){
     ['#/missions', ICONS.flag, 'ภารกิจ'],
     ['#/events', ICONS.bell, 'กิจกรรม'],
     ['#/wheel', ICONS.spin, 'วงล้อ'],
+    ['#/rewards', ICONS.gift, 'รางวัล'],
+    ['#/discord', ICONS.headset, 'Discord'],
   ];
   return `<div class="bottomnav" id="bottomNav"><div class="nav-indicator" id="navIndicator"></div>${items.map(([r,i,l])=>`
     <button class="navbtn ${state.route===r?'active':''}" data-action="goto" data-route="${r}">${i}<span>${l}</span></button>
@@ -535,10 +650,14 @@ function pageProfile(){
           <div class="badge-num muted" style="font-size:12px;margin-top:4px;">UID ${esc(p.memberId||'--------')}</div>
         </div>
       </div>
-      <div class="between" style="margin-top:14px;">
-        <div class="points-badge"><div class="coin">🪙</div><div><div class="amt">${Number(p.points||0).toLocaleString('th-TH')}</div><div class="lbl">แต้มสะสม</div></div></div>
+      <div class="between" style="margin-top:14px;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="points-badge"><div class="coin">🪙</div><div><div class="amt">${Number(p.points||0).toLocaleString('th-TH')}</div><div class="lbl">GP</div></div></div>
+          <div class="points-badge pt"><div class="coin">🎧</div><div><div class="amt">${Number(p.discordPoints||0).toLocaleString('th-TH')}</div><div class="lbl">Point</div></div></div>
+        </div>
         <button class="btn btn-sm" data-action="edit-profile">แก้ไขโปรไฟล์</button>
       </div>
+      ${levelBarHTML(p.points)}
     </div>
 
     <div class="card">
@@ -694,7 +813,10 @@ function pageMembers(){
           <img src="${esc(u.photoURL)||placeholderAvatar()}">
           <div style="font-weight:600;font-size:13px;">${esc(u.stageName||u.nickname||'สมาชิก')}</div>
           <div class="muted" style="font-size:11px;">UID ${esc(u.memberId||'')}</div>
-          <div class="points-badge sm" style="margin-top:6px;"><div class="coin">🪙</div><div class="amt">${Number(u.points||0).toLocaleString('th-TH')}</div></div>
+          <div class="row" style="justify-content:center;margin-top:6px;gap:6px;">
+            <div class="level-badge lv-sm"><div class="lv-num">LV${levelInfo(u.points).level}</div></div>
+            <div class="points-badge sm"><div class="coin">🪙</div><div class="amt">${Number(u.points||0).toLocaleString('th-TH')}</div></div>
+          </div>
           <div class="pill" style="margin-top:6px;font-size:10px;">${u.privacy==='public'?'สาธารณะ':'ส่วนตัว'}</div>
         </div>
       `).join('') || `<div class="empty">ยังไม่มีสมาชิก</div>`}
@@ -717,7 +839,12 @@ function pageMemberView(id){
           <div class="badge-num muted" style="font-size:12px;margin-top:4px;">UID ${esc(u.memberId||'')}</div>
         </div>
       </div>
-      ${canView ? `<div class="points-badge" style="margin-top:12px;"><div class="coin">🪙</div><div><div class="amt">${Number(u.points||0).toLocaleString('th-TH')}</div><div class="lbl">แต้มสะสม</div></div></div>` : ''}
+      ${canView ? `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+        <div class="points-badge"><div class="coin">🪙</div><div><div class="amt">${Number(u.points||0).toLocaleString('th-TH')}</div><div class="lbl">GP</div></div></div>
+        <div class="points-badge pt"><div class="coin">🎧</div><div><div class="amt">${Number(u.discordPoints||0).toLocaleString('th-TH')}</div><div class="lbl">Point</div></div></div>
+      </div>
+      ${levelBarHTML(u.points)}` : ''}
     </div>
     ${canView ? `
     ${(u.characters&&u.characters.length) ? `
@@ -829,6 +956,16 @@ function pageHistory(){
     <div id="myMissionHistory" class="card"><div class="empty">กำลังโหลด...</div></div>
     <div class="section-title">ประวัติวงล้อของฉัน</div>
     <div id="mySpinHistory" class="card"><div class="empty">กำลังโหลด...</div></div>
+    <div class="section-title">ประวัติเช็คอิน Discord</div>
+    <div class="card">
+      ${state.myCheckins.slice().sort((a,b)=>(b.checkedAt&&b.checkedAt.seconds||0)-(a.checkedAt&&a.checkedAt.seconds||0)).map(k=>{
+        const s = state.discordSchedule.find(x=>x.id===k.scheduleId);
+        return `<div style="padding:8px 0;border-bottom:1px solid var(--line);font-size:12px;">
+          <div style="font-weight:600;">${esc(s?s.title:'กำหนดการ')}</div>
+          <div class="muted">${esc(k.status||'')} · +${k.pointsAwarded||0} Point · ${k.checkedAt?fmtDate(k.checkedAt):''}</div>
+        </div>`;
+      }).join('') || `<div class="empty">ยังไม่มีประวัติเช็คอิน</div>`}
+    </div>
   `, {title:'ประวัติของฉัน'});
 }
 async function loadHistoryInto(){
@@ -846,7 +983,11 @@ async function loadHistoryInto(){
       }).join('');
       el.innerHTML = rows || `<div class="empty">ยังไม่มีประวัติ</div>`;
     }
-  }catch(e){ console.warn(e); }
+  }catch(e){
+    console.warn(e);
+    const el = document.getElementById('myMissionHistory');
+    if(el) el.innerHTML = `<div class="empty">${errNote(e,'โหลดประวัติภารกิจไม่สำเร็จ')}</div>`;
+  }
   try{
     const sp = await db.collection('spinHistory').where('uid','==',state.user.uid).orderBy('at','desc').limit(30).get();
     const el2 = document.getElementById('mySpinHistory');
@@ -860,7 +1001,11 @@ async function loadHistoryInto(){
       }).join('');
       el2.innerHTML = rows || `<div class="empty">ยังไม่มีประวัติ</div>`;
     }
-  }catch(e){ console.warn(e); }
+  }catch(e){
+    console.warn(e);
+    const el2 = document.getElementById('mySpinHistory');
+    if(el2) el2.innerHTML = `<div class="empty">${errNote(e,'โหลดประวัติวงล้อไม่สำเร็จ')}</div>`;
+  }
 }
 
 function pageWheel(){
@@ -886,6 +1031,84 @@ function pageWheel(){
       </div>
     </div>` : `<div class="empty">แอดมินยังไม่ได้ตั้งค่าวงล้อ</div>`}
   `, {title:'วงล้อสุ่มของรางวัล'});
+}
+
+function pageRewards(){
+  const p = state.profile || {};
+  return shell(`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <div class="points-badge"><div class="coin">🪙</div><div><div class="amt">${Number(p.points||0).toLocaleString('th-TH')}</div><div class="lbl">GP</div></div></div>
+      <div class="points-badge pt"><div class="coin">🎧</div><div><div class="amt">${Number(p.discordPoints||0).toLocaleString('th-TH')}</div><div class="lbl">Point</div></div></div>
+    </div>
+    <div class="reward-grid">
+      ${state.rewards.map(r=>{
+        const balance = r.costType==='point' ? Number(p.discordPoints||0) : Number(p.points||0);
+        const outOfStock = !(r.stock===null||r.stock===undefined||r.stock==='') && Number(r.stock)<=0;
+        const canAfford = balance >= Number(r.cost||0);
+        const disabled = outOfStock || !canAfford;
+        return `<div class="reward-card">
+          ${r.imageURL?`<img src="${esc(r.imageURL)}">`:''}
+          <div class="reward-name">${esc(r.name)}</div>
+          ${r.description?`<div class="muted" style="font-size:11.5px;">${esc(r.description)}</div>`:''}
+          <div class="points-badge sm ${r.costType==='point'?'pt':''}"><div class="coin">${r.costType==='point'?'🎧':'🪙'}</div><div class="amt">${Number(r.cost||0).toLocaleString('th-TH')}</div></div>
+          <div class="reward-stock">${outOfStock?'ของหมดแล้ว':(r.stock===null||r.stock===undefined||r.stock===''?'ไม่จำกัดจำนวน':'คงเหลือ '+r.stock+' ชิ้น')}</div>
+          <button class="btn ${disabled?'':'btn-accent'} btn-block btn-sm" ${disabled?'disabled style="opacity:.45"':''} data-action="redeem-reward" data-id="${r.id}">${outOfStock?'ของหมดแล้ว':(canAfford?'แลกของรางวัล':'แต้มไม่พอ')}</button>
+        </div>`;
+      }).join('') || `<div class="empty" style="grid-column:1/-1">แอดมินยังไม่ได้เพิ่มของรางวัล</div>`}
+    </div>
+    <div class="section-title">ประวัติการแลกของฉัน</div>
+    ${state.myRedemptions.map(r=>`
+      <div class="card">
+        <div class="between">
+          <div style="font-weight:700;font-size:13px;">${esc(r.rewardName)}</div>
+          <span class="pill">${r.status==='มอบแล้ว'?'มอบแล้ว':'รอดำเนินการ'}</span>
+        </div>
+        <div class="muted" style="font-size:11.5px;margin-top:4px;">${r.cost} ${r.costType==='point'?'Point':'GP'} · ${fmtDate(r.at)}</div>
+      </div>
+    `).join('') || `<div class="empty">ยังไม่มีประวัติการแลกของรางวัล</div>`}
+  `, {title:'แลกของรางวัล'});
+}
+
+function pageDiscord(){
+  const p = state.profile || {};
+  const c = state.siteConfig;
+  const now = new Date();
+  return shell(`
+    <div class="card">
+      <div class="between">
+        <div>
+          <div class="section-title" style="margin:0 0 4px;">Point ของฉัน</div>
+          <div class="points-badge pt"><div class="coin">🎧</div><div><div class="amt">${Number(p.discordPoints||0).toLocaleString('th-TH')}</div><div class="lbl">Point</div></div></div>
+        </div>
+      </div>
+      <div class="muted" style="font-size:12px;margin-top:10px;">เข้าฟัง Discord ตรงเวลา ได้ ${c.discordPtOnTime!=null?c.discordPtOnTime:2} Point · เข้าช้า ได้ ${c.discordPtLate!=null?c.discordPtLate:1} Point</div>
+    </div>
+    <div class="section-title" style="margin-top:0">กำหนดการเข้าฟัง Discord</div>
+    ${state.discordSchedule.slice().sort((a,b)=>((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||''))).map(s=>{
+      const already = state.myCheckins.find(k=>k.scheduleId===s.id);
+      const schedDt = s.date && s.time ? new Date(s.date+'T'+s.time+':00') : null;
+      const d = schedDt ? schedDt.getDate() : '-';
+      const m = schedDt ? schedDt.toLocaleDateString('th-TH',{month:'short'}) : '';
+      let statusHtml = '';
+      if(already){
+        statusHtml = `<span class="sched-status ${already.status==='ตรงเวลา'?'ontime':'late'}">${esc(already.status)} · +${already.pointsAwarded||0} Point</span>`;
+      } else if(schedDt && now < schedDt){
+        statusHtml = `<span class="sched-status">ยังไม่ถึงเวลา</span>`;
+      } else {
+        statusHtml = `<button class="btn btn-sm btn-accent" data-action="checkin-discord" data-id="${s.id}">เช็คอิน</button>`;
+      }
+      return `<div class="card">
+        <div class="sched-row">
+          <div class="sched-date"><div class="d">${d}</div><div class="m">${esc(m)}</div></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:13.5px;">${esc(s.title)}</div>
+            <div class="muted" style="font-size:11.5px;">${esc(s.date||'')} เวลา ${esc(s.time||'')} น.</div>
+          </div>
+          ${statusHtml}
+        </div>
+      </div>`;
+    }).join('') || `<div class="empty">แอดมินยังไม่ได้วางกำหนดการ</div>`}
+  `, {title:'ระบบ Point (Discord)'});
 }
 
 /* ---------------- Feed / posts ---------------- */
@@ -990,7 +1213,7 @@ function attachPostFormGeoHandler(){
 function pageAdmin(){
   if(!state.adminAuthed) return shell(pageLoginAdminOnly(), {title:'เข้าสู่ระบบแอดมิน', back:false, nav:false});
   const tab = state.adminTab || 'site';
-  const tabs = [['site','⚙️ ตั้งค่าเว็บไซต์'],['members','👥 สมาชิก'],['posts','🖼️ โพสต์ผลงาน'],['cats','🏷️ หมวดหมู่ภารกิจ'],['missions','🚩 ภารกิจ'],['events','🔔 กิจกรรม'],['wheels','🎡 วงล้อสุ่ม']];
+  const tabs = [['site','⚙️ ตั้งค่าเว็บไซต์'],['members','👥 สมาชิก'],['posts','🖼️ โพสต์ผลงาน'],['cats','🏷️ หมวดหมู่ภารกิจ'],['missions','🚩 ภารกิจ'],['events','🔔 กิจกรรม'],['wheels','🎡 วงล้อสุ่ม'],['rewards','🎁 ของรางวัล'],['discord','🎧 Point (Discord)'],['levels','⭐ เลเวล']];
   return shell(`
     <div class="tabbar" id="adminTabs">${tabs.map(([k,l])=>`<button class="btn btn-sm ${tab===k?'btn-accent':''}" data-action="admin-tab" data-tab="${k}">${l}</button>`).join('')}</div>
     <div id="adminBody" style="animation:pageIn .3s cubic-bezier(.2,.8,.2,1) both;">${adminTabBody(tab)}</div>
@@ -1045,15 +1268,20 @@ function adminTabBody(tab){
             <div style="font-weight:700;">${esc(u.stageName||u.nickname||'สมาชิก')}</div>
             <div class="muted" style="font-size:12px;">UID ${esc(u.memberId)}</div>
           </div>
-          <div class="points-badge sm"><div class="coin">🪙</div><div class="amt">${Number(u.points||0).toLocaleString('th-TH')}</div></div>
+          <div class="row" style="gap:6px;">
+            <div class="level-badge lv-sm"><div class="lv-num">LV${levelInfo(u.points).level}</div></div>
+            <div class="points-badge sm"><div class="coin">🪙</div><div class="amt">${Number(u.points||0).toLocaleString('th-TH')}</div></div>
+          </div>
         </div>
         <div class="grid2" style="margin-top:10px;">
-          <div><label>แต้มสะสม</label><input type="number" class="m_points" data-id="${u.id}" value="${u.points||0}"></div>
-          <div><label>สถานะ</label>
-            <select class="m_status" data-id="${u.id}">
-              ${['ออนไลน์','ไม่ว่าง','ออฟไลน์'].map(s=>`<option ${u.status===s?'selected':''}>${s}</option>`).join('')}
-            </select>
-          </div>
+          <div><label>GP (แต้มกิจกรรมเว็บ)</label><input type="number" class="m_points" data-id="${u.id}" value="${u.points||0}"></div>
+          <div><label>Point (Discord)</label><input type="number" class="m_discordPoints" data-id="${u.id}" value="${u.discordPoints||0}"></div>
+        </div>
+        <div style="margin-top:10px;">
+          <label>สถานะ</label>
+          <select class="m_status" data-id="${u.id}">
+            ${['ออนไลน์','ไม่ว่าง','ออฟไลน์'].map(s=>`<option ${u.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
         </div>
         <button class="btn btn-sm" style="margin-top:10px;" data-action="save-member" data-id="${u.id}">บันทึกสมาชิกคนนี้</button>
       </div>`).join('') || `<div class="empty">ยังไม่มีสมาชิก</div>`}
@@ -1127,7 +1355,81 @@ function adminTabBody(tab){
     `).join('') || `<div class="empty">ยังไม่มีวงล้อ</div>`}
     `;
   }
+  if(tab==='rewards'){
+    const pending = state.allRedemptions.filter(r=>r.status!=='มอบแล้ว');
+    return `
+    <button class="btn btn-accent btn-block" data-action="new-reward">+ เพิ่มของรางวัลใหม่</button>
+    <div class="reward-grid" style="margin-top:12px;">
+      ${state.rewards.map(r=>`
+        <div class="reward-card">
+          ${r.imageURL?`<img src="${esc(r.imageURL)}">`:''}
+          <div class="reward-name">${esc(r.name)}</div>
+          <div class="points-badge sm ${r.costType==='point'?'pt':''}"><div class="coin">${r.costType==='point'?'🎧':'🪙'}</div><div class="amt">${Number(r.cost||0).toLocaleString('th-TH')}</div></div>
+          <div class="reward-stock">${r.stock===null||r.stock===undefined||r.stock===''?'ไม่จำกัดจำนวน':'คงเหลือ '+r.stock+' ชิ้น'}</div>
+          <div class="row" style="margin-top:4px;">
+            <button class="btn btn-sm" style="flex:1" data-action="edit-reward" data-id="${r.id}">แก้ไข</button>
+            <button class="btn btn-sm btn-danger" data-action="del-reward" data-id="${r.id}">ลบ</button>
+          </div>
+        </div>
+      `).join('') || `<div class="empty" style="grid-column:1/-1">ยังไม่มีของรางวัล</div>`}
+    </div>
+    <div class="section-title">คำขอแลกของรางวัล (${pending.length} รอดำเนินการ)</div>
+    ${state.allRedemptions.map(r=>{
+      const u = state.allUsers.find(x=>x.id===r.uid);
+      return `<div class="card">
+        <div class="between">
+          <div>
+            <div style="font-weight:700;font-size:13px;">${esc(r.rewardName)}</div>
+            <div class="muted" style="font-size:11.5px;">${esc((u&&(u.stageName||u.nickname))||'สมาชิก')} · ${r.cost} ${r.costType==='point'?'Point':'GP'} · ${fmtDate(r.at)}</div>
+          </div>
+          ${r.status==='มอบแล้ว' ? `<span class="pill">มอบแล้ว</span>` : `<button class="btn btn-sm btn-accent" data-action="mark-redeemed" data-id="${r.id}">มอบของแล้ว</button>`}
+        </div>
+      </div>`;
+    }).join('') || `<div class="empty">ยังไม่มีคำขอแลกของรางวัล</div>`}
+    `;
+  }
+  if(tab==='discord'){
+    const c = state.siteConfig;
+    return `
+    <div class="card">
+      <div class="section-title" style="margin-top:0">ตั้งค่าระบบ Point</div>
+      <div class="grid2">
+        <div><label>ตรงเวลา ได้ (Point)</label><input type="number" id="a_ptOnTime" value="${c.discordPtOnTime!=null?c.discordPtOnTime:2}"></div>
+        <div><label>เข้าช้า ได้ (Point)</label><input type="number" id="a_ptLate" value="${c.discordPtLate!=null?c.discordPtLate:1}"></div>
+      </div>
+      <label>ระยะเวลาผ่อนผัน (นาทีหลังเวลานัด ยังถือว่าตรงเวลา)</label>
+      <input type="number" id="a_ptGrace" value="${c.discordGraceMinutes!=null?c.discordGraceMinutes:15}">
+      <button class="btn btn-accent btn-block" style="margin-top:14px;" data-action="save-discord-settings">บันทึกการตั้งค่า</button>
+    </div>
+    <button class="btn btn-accent btn-block" data-action="new-discord-schedule">+ เพิ่มกำหนดการเข้าฟัง Discord</button>
+    ${state.discordSchedule.map(s=>{
+      return `<div class="card">
+        <div class="between"><div style="font-weight:700;">${esc(s.title)}</div>
+        <div class="row"><button class="btn btn-sm" data-action="edit-discord-schedule" data-id="${s.id}">แก้ไข</button><button class="btn btn-sm btn-danger" data-action="del-discord-schedule" data-id="${s.id}">ลบ</button></div></div>
+        <div class="muted" style="font-size:12px;">${esc(s.date||'')} เวลา ${esc(s.time||'')} น.</div>
+      </div>`;
+    }).join('') || `<div class="empty">ยังไม่มีกำหนดการ</div>`}
+    `;
+  }
+  if(tab==='levels'){
+    const levels = getLevels();
+    return `
+    <div class="card">
+      <div class="section-title" style="margin-top:0">ตารางเลเวล (เรียงตาม GP ที่ต้องใช้)</div>
+      <div id="levelRows">${levels.map((l,i)=>levelRow(l,i)).join('')}</div>
+      <button type="button" class="btn btn-sm" id="addLevelRow" style="margin-top:8px;">+ เพิ่มเลเวล</button>
+      <div class="hint">เลเวลจะเรียงลำดับตาม GP ที่ต้องใช้จากน้อยไปมากโดยอัตโนมัติเมื่อบันทึก</div>
+      <button class="btn btn-accent btn-block" style="margin-top:14px;" data-action="save-levels">บันทึกตารางเลเวล</button>
+    </div>`;
+  }
   return '';
+}
+function levelRow(l,i){
+  return `<div class="row levelRow" style="margin-top:8px;">
+    <input type="text" class="lv_name" placeholder="ชื่อเลเวล" value="${esc(l.name)}" style="flex:2">
+    <input type="number" class="lv_gp" placeholder="GP ที่ต้องใช้" value="${l.gp||0}" style="flex:1">
+    <button type="button" class="icon-btn" onclick="this.closest('.levelRow').remove()">✕</button>
+  </div>`;
 }
 
 function missionFormModal(existing){
@@ -1204,6 +1506,51 @@ function prizeRow(p,i){
   </div>`;
 }
 
+function rewardFormModal(existing){
+  const r = existing || {};
+  return `
+  <div class="modal-back" data-action="close-modal">
+    <div class="modal"><div class="modal-handle"></div>
+      <div class="between"><h3 style="margin:0">${existing?'แก้ไขของรางวัล':'เพิ่มของรางวัลใหม่'}</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
+      <form id="rewardForm" data-id="${r.id||''}">
+        <label>รูปของรางวัล</label>
+        ${r.imageURL?`<img class="poster" style="aspect-ratio:4/3;" src="${esc(r.imageURL)}">`:''}
+        <input type="file" id="rw_image" accept="image/*">
+        <label>ชื่อของรางวัล</label><input type="text" id="rw_name" value="${esc(r.name)}" required>
+        <label>รายละเอียด</label><textarea id="rw_desc">${esc(r.description)}</textarea>
+        <div class="grid2">
+          <div><label>ใช้แต้มประเภท</label>
+            <select id="rw_costType">
+              <option value="gp" ${r.costType!=='point'?'selected':''}>GP</option>
+              <option value="point" ${r.costType==='point'?'selected':''}>Point (Discord)</option>
+            </select>
+          </div>
+          <div><label>จำนวนแต้มที่ใช้แลก</label><input type="number" id="rw_cost" min="0" value="${r.cost||0}"></div>
+        </div>
+        <label>จำนวนคงเหลือ (เว้นว่าง = ไม่จำกัด)</label><input type="number" id="rw_stock" min="0" value="${r.stock!=null?r.stock:''}">
+        <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;">บันทึกของรางวัล</button>
+      </form>
+    </div>
+  </div>`;
+}
+function discordScheduleFormModal(existing){
+  const s = existing || {};
+  return `
+  <div class="modal-back" data-action="close-modal">
+    <div class="modal"><div class="modal-handle"></div>
+      <div class="between"><h3 style="margin:0">${existing?'แก้ไขกำหนดการ':'เพิ่มกำหนดการเข้าฟัง Discord'}</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
+      <form id="discordScheduleForm" data-id="${s.id||''}">
+        <label>ชื่อกำหนดการ</label><input type="text" id="ds_title" value="${esc(s.title)}" placeholder="เช่น ฟังเสียงประชุมประจำสัปดาห์" required>
+        <div class="grid2">
+          <div><label>วันที่</label><input type="date" id="ds_date" value="${esc(s.date)}" required></div>
+          <div><label>เวลา</label><input type="time" id="ds_time" value="${esc(s.time)}" required></div>
+        </div>
+        <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;">บันทึกกำหนดการ</button>
+      </form>
+    </div>
+  </div>`;
+}
+
 /* ---------------- render dispatcher ---------------- */
 function render(){
   const [path, param] = state.route.split(':');
@@ -1223,6 +1570,8 @@ function render(){
       case '#/events': html = pageEvents(); break;
       case '#/history': html = pageHistory(); break;
       case '#/wheel': html = pageWheel(); break;
+      case '#/rewards': html = pageRewards(); break;
+      case '#/discord': html = pageDiscord(); break;
       default: html = pageProfile();
     }
   }
@@ -1261,6 +1610,7 @@ function afterRender(path, param){
   }
   if(path==='#/history'){ loadHistoryInto(); }
   if(path==='#/wheel'){ drawWheelCanvas(); }
+  if(path==='#/admin' && state.adminAuthed && state.adminTab==='levels'){ attachLevelRowHandler(); }
 }
 
 /* ---------------- wheel drawing/spin ---------------- */
@@ -1458,11 +1808,43 @@ document.addEventListener('submit', async (e)=>{
     else{ await db.collection('wheels').add(data); }
     await loadWheels(); state.modal=null; state.adminTab='wheels'; render(); toast('บันทึกวงล้อแล้ว');
   }
+  if(e.target.id==='rewardForm'){
+    const id = e.target.dataset.id;
+    let imageURL = state.editingReward?.imageURL || '';
+    const file = document.getElementById('rw_image').files[0];
+    if(file){ toast('กำลังอัปโหลดรูป...'); imageURL = await uploadImage(file, 'rewards/reward', 800); }
+    const stockRaw = $('#rw_stock').value;
+    const data = {
+      name: $('#rw_name').value, description: $('#rw_desc').value,
+      costType: $('#rw_costType').value, cost: Number($('#rw_cost').value||0),
+      stock: stockRaw===''? null : Number(stockRaw), imageURL
+    };
+    if(id){ await db.collection('rewards').doc(id).update(data); }
+    else{ data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('rewards').add(data); }
+    await loadRewards(); state.modal=null; state.adminTab='rewards'; render(); toast('บันทึกของรางวัลแล้ว');
+  }
+  if(e.target.id==='discordScheduleForm'){
+    const id = e.target.dataset.id;
+    const data = { title:$('#ds_title').value, date:$('#ds_date').value, time:$('#ds_time').value };
+    if(id){ await db.collection('discordSchedule').doc(id).update(data); }
+    else{ data.createdAt = firebase.firestore.FieldValue.serverTimestamp(); await db.collection('discordSchedule').add(data); }
+    await loadDiscordSchedule(); state.modal=null; state.adminTab='discord'; render(); toast('บันทึกกำหนดการแล้ว');
+  }
   }catch(err){
     console.error('[hijime] submit error:', e.target.id, err);
-    toast('บันทึกไม่สำเร็จ: ' + (err && (err.message || err.code) || 'ไม่ทราบสาเหตุ'));
+    toast(errNote(err,'บันทึกไม่สำเร็จ'));
   }
 });
+function extractIndexLink(err){
+  const msg = (err && (err.message||err.code||'')) || '';
+  const m = String(msg).match(/https:\/\/console\.firebase\.google\.com\S+/);
+  return m ? m[0] : null;
+}
+function errNote(err, fallback){
+  const link = extractIndexLink(err);
+  if(link) return `${fallback} — ต้องสร้าง Firestore Index ก่อนใช้งานได้: <a href="${link}" target="_blank" rel="noopener" style="text-decoration:underline;color:var(--accent)">คลิกเพื่อสร้าง Index</a>`;
+  return fallback + (err && (err.message||err.code) ? ' ('+(err.message||err.code)+')' : '');
+}
 function translateAuthErr(err){
   const m = {
     'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว',
@@ -1581,11 +1963,72 @@ document.addEventListener('click', async (e)=>{
         await q.docs[0].ref.update({submittedAt:firebase.firestore.FieldValue.serverTimestamp(), status:'ส่งแล้ว'});
         toast('ส่งภารกิจแล้ว รอตรวจสอบ');
       }
-    }catch(err){ console.warn(err); toast('ส่งภารกิจแล้ว'); }
+    }catch(err){ console.warn(err); toast(errNote(err,'ส่งภารกิจไม่สำเร็จ')); }
     return;
   }
   if(action==='pick-wheel'){ state.activeWheelId = t.dataset.id; state.wheelRotation=0; render(); return; }
   if(action==='spin'){ doSpin(t.dataset.id); return; }
+  if(action==='redeem-reward'){
+    const id = t.dataset.id;
+    const r = state.rewards.find(x=>x.id===id);
+    if(!r){ toast('ไม่พบของรางวัลนี้'); return; }
+    const p = state.profile||{};
+    const field = r.costType==='point' ? 'discordPoints' : 'points';
+    const balance = Number(p[field]||0);
+    const cost = Number(r.cost||0);
+    if(balance < cost){ toast('แต้มไม่พอสำหรับแลกของรางวัลนี้'); return; }
+    if(!(r.stock===null||r.stock===undefined) && Number(r.stock)<=0){ toast('ของรางวัลนี้หมดแล้ว'); return; }
+    try{
+      await db.runTransaction(async (tx)=>{
+        const userRef = db.collection('users').doc(state.user.uid);
+        const rewardRef = db.collection('rewards').doc(id);
+        const [userSnap, rewardSnap] = await Promise.all([tx.get(userRef), tx.get(rewardRef)]);
+        const uData = userSnap.data()||{};
+        const rData = rewardSnap.data()||{};
+        const curBal = Number(uData[field]||0);
+        if(curBal < cost) throw new Error('แต้มไม่พอ');
+        const hasStock = !(rData.stock===null||rData.stock===undefined);
+        if(hasStock){
+          if(Number(rData.stock)<=0) throw new Error('ของหมดแล้ว');
+          tx.update(rewardRef, {stock: Number(rData.stock)-1});
+        }
+        tx.update(userRef, {[field]: curBal - cost});
+        const redemptionRef = db.collection('redemptions').doc();
+        tx.set(redemptionRef, {
+          uid: state.user.uid, rewardId: id, rewardName: rData.name||r.name,
+          cost, costType: r.costType, status:'รอดำเนินการ', at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+      state.profile[field] = Number(state.profile[field]||0) - cost;
+      if(!(r.stock===null||r.stock===undefined)) r.stock = Number(r.stock)-1;
+      await loadMyRedemptions();
+      render(); toast('แลกของรางวัลสำเร็จ! รอแอดมินติดต่อมอบของรางวัล');
+    }catch(err){ console.error(err); toast(errNote(err,'แลกของรางวัลไม่สำเร็จ')); }
+    return;
+  }
+  if(action==='checkin-discord'){
+    const id = t.dataset.id;
+    const s = state.discordSchedule.find(x=>x.id===id);
+    if(!s){ toast('ไม่พบกำหนดการนี้'); return; }
+    if(state.myCheckins.find(k=>k.scheduleId===id)){ toast('คุณเช็คอินกำหนดการนี้ไปแล้ว'); return; }
+    const schedDt = s.date && s.time ? new Date(s.date+'T'+s.time+':00') : new Date();
+    const grace = Number(state.siteConfig.discordGraceMinutes!=null?state.siteConfig.discordGraceMinutes:15);
+    const deadline = new Date(schedDt.getTime() + grace*60000);
+    const now = new Date();
+    const onTime = now <= deadline;
+    const pts = onTime ? Number(state.siteConfig.discordPtOnTime!=null?state.siteConfig.discordPtOnTime:2)
+                       : Number(state.siteConfig.discordPtLate!=null?state.siteConfig.discordPtLate:1);
+    const status = onTime ? 'ตรงเวลา' : 'สายเวลา';
+    try{
+      const checkinData = { uid: state.user.uid, scheduleId: id, status, pointsAwarded: pts, checkedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      await db.collection('discordCheckins').add(checkinData);
+      await db.collection('users').doc(state.user.uid).update({discordPoints: firebase.firestore.FieldValue.increment(pts)});
+      state.profile.discordPoints = Number(state.profile.discordPoints||0) + pts;
+      state.myCheckins.push({...checkinData, checkedAt:{seconds: Math.floor(Date.now()/1000)}});
+      render(); toast(`เช็คอินสำเร็จ! ${status} ได้ ${pts} Point`);
+    }catch(err){ console.error(err); toast(errNote(err,'เช็คอินไม่สำเร็จ')); }
+    return;
+  }
 
   // admin
   if(action==='admin-tab'){
@@ -1596,6 +2039,7 @@ document.addEventListener('click', async (e)=>{
     body.style.animation='none'; body.offsetHeight; body.style.animation='pageIn .3s cubic-bezier(.2,.8,.2,1) both';
     body.innerHTML = adminTabBody(state.adminTab);
     body.querySelectorAll('.card').forEach((el,i)=>{ el.style.animationDelay = Math.min(i*0.045,0.4)+'s'; });
+    if(state.adminTab==='levels') attachLevelRowHandler();
     return;
   }
   if(action==='save-site'){
@@ -1608,9 +2052,10 @@ document.addEventListener('click', async (e)=>{
   if(action==='save-member'){
     const id = t.dataset.id;
     const points = Number(document.querySelector(`.m_points[data-id="${id}"]`).value||0);
+    const discordPoints = Number(document.querySelector(`.m_discordPoints[data-id="${id}"]`).value||0);
     const status = document.querySelector(`.m_status[data-id="${id}"]`).value;
-    await db.collection('users').doc(id).update({points, status});
-    const u = state.allUsers.find(x=>x.id===id); if(u){u.points=points; u.status=status;}
+    await db.collection('users').doc(id).update({points, discordPoints, status});
+    const u = state.allUsers.find(x=>x.id===id); if(u){u.points=points; u.discordPoints=discordPoints; u.status=status;}
     toast('บันทึกแล้ว'); return;
   }
   if(action==='add-cat'){
@@ -1641,15 +2086,51 @@ document.addEventListener('click', async (e)=>{
   if(action==='edit-wheel'){ const w = state.wheels.find(x=>x.id===t.dataset.id); state.modal = wheelFormModal(w); render(); attachPrizeRowHandler(); return; }
   if(action==='del-wheel'){ await db.collection('wheels').doc(t.dataset.id).delete(); await loadWheels(); document.getElementById('adminBody').innerHTML = adminTabBody('wheels'); return; }
 
+  if(action==='new-reward'){ state.editingReward=null; state.modal = rewardFormModal(null); render(); return; }
+  if(action==='edit-reward'){ const r = state.rewards.find(x=>x.id===t.dataset.id); state.editingReward=r; state.modal = rewardFormModal(r); render(); return; }
+  if(action==='del-reward'){ await db.collection('rewards').doc(t.dataset.id).delete(); await loadRewards(); document.getElementById('adminBody').innerHTML = adminTabBody('rewards'); toast('ลบของรางวัลแล้ว'); return; }
+  if(action==='mark-redeemed'){
+    const id = t.dataset.id;
+    await db.collection('redemptions').doc(id).update({status:'มอบแล้ว'});
+    const r = state.allRedemptions.find(x=>x.id===id); if(r) r.status='มอบแล้ว';
+    document.getElementById('adminBody').innerHTML = adminTabBody('rewards'); toast('บันทึกแล้ว'); return;
+  }
+  if(action==='new-discord-schedule'){ state.modal = discordScheduleFormModal(null); render(); return; }
+  if(action==='edit-discord-schedule'){ const s = state.discordSchedule.find(x=>x.id===t.dataset.id); state.modal = discordScheduleFormModal(s); render(); return; }
+  if(action==='del-discord-schedule'){ await db.collection('discordSchedule').doc(t.dataset.id).delete(); await loadDiscordSchedule(); document.getElementById('adminBody').innerHTML = adminTabBody('discord'); toast('ลบกำหนดการแล้ว'); return; }
+  if(action==='save-discord-settings'){
+    const data = {
+      discordPtOnTime: Number(document.getElementById('a_ptOnTime').value||0),
+      discordPtLate: Number(document.getElementById('a_ptLate').value||0),
+      discordGraceMinutes: Number(document.getElementById('a_ptGrace').value||0)
+    };
+    await db.collection('siteConfig').doc('main').set(data, {merge:true});
+    Object.assign(state.siteConfig, data); toast('บันทึกการตั้งค่าแล้ว'); return;
+  }
+  if(action==='save-levels'){
+    const rows = Array.from(document.querySelectorAll('.levelRow')).map(row=>({
+      name: row.querySelector('.lv_name').value, gp: Number(row.querySelector('.lv_gp').value||0)
+    })).filter(l=>l.name);
+    rows.sort((a,b)=>a.gp-b.gp);
+    await db.collection('siteConfig').doc('main').set({levels: rows}, {merge:true});
+    state.siteConfig.levels = rows; render(); attachLevelRowHandler(); toast('บันทึกตารางเลเวลแล้ว'); return;
+  }
+
   }catch(err){
     console.error('[hijime] action error:', action, err);
-    toast('เกิดข้อผิดพลาด: ' + (err && (err.message || err.code) || 'ไม่ทราบสาเหตุ'));
+    toast(errNote(err,'เกิดข้อผิดพลาด'));
   }
 });
 function attachPrizeRowHandler(){
   const btn = document.getElementById('addPrizeRow');
   if(btn) btn.addEventListener('click', ()=>{
     document.getElementById('prizeRows').insertAdjacentHTML('beforeend', prizeRow({name:'',pct:0}));
+  });
+}
+function attachLevelRowHandler(){
+  const btn = document.getElementById('addLevelRow');
+  if(btn) btn.addEventListener('click', ()=>{
+    document.getElementById('levelRows').insertAdjacentHTML('beforeend', levelRow({name:'',gp:0}));
   });
 }
 document.addEventListener('click', (e)=>{
@@ -1667,7 +2148,7 @@ async function boot(){
   await loadSiteConfig();
   render();
   if(state.adminAuthed){
-    await Promise.allSettled([loadAllUsers(), loadPosts()]);
+    await Promise.allSettled([loadAllUsers(), loadPosts(), loadMissions(), loadMissionCats(), loadEvents(), loadWheels(), loadRewards(), loadDiscordSchedule(), loadAllRedemptions()]);
     render();
   }
   const splash = document.getElementById('bootSplash');
