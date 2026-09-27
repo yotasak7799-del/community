@@ -11,7 +11,6 @@
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-app-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.7.1/firebase-storage-compat.js"></script>
 <style>
 :root{
   --bg:#0a0a0a; --bg2:#111111; --surface:#161616; --surface2:#1e1e1e;
@@ -287,8 +286,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-let storage = null;
-try{ storage = firebase.storage(); }catch(e){ console.warn('storage unavailable', e); }
+
 
 /* ---------------- helpers ---------------- */
 const $ = s => document.querySelector(s);
@@ -311,7 +309,8 @@ function calcAge(dob){
   if(n.getMonth()<b.getMonth() || (n.getMonth()===b.getMonth() && n.getDate()<b.getDate())) a--;
   return a;
 }
-function fileToResizedDataURL(file, maxW){
+function fileToResizedDataURL(file, maxW, quality){
+  quality = quality || 0.82;
   return new Promise((res,rej)=>{
     const img = new Image();
     const reader = new FileReader();
@@ -320,7 +319,7 @@ function fileToResizedDataURL(file, maxW){
         const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
         const c = document.createElement('canvas'); c.width=w; c.height=h;
         c.getContext('2d').drawImage(img,0,0,w,h);
-        res(c.toDataURL('image/jpeg',0.82));
+        res(c.toDataURL('image/jpeg',quality));
       };
       img.onerror = rej;
       img.src = e.target.result;
@@ -329,16 +328,24 @@ function fileToResizedDataURL(file, maxW){
     reader.readAsDataURL(file);
   });
 }
+// เก็บรูปเป็น Base64 ตรงใน Firestore เลย (ไม่ใช้ Firebase Storage แล้ว)
+// Firestore จำกัดขนาดต่อเอกสารไว้ที่ 1MB จึงบีบรูปให้เหลือ margin ที่ปลอดภัย (~700KB ต่อรูป)
 async function uploadImage(file, path, maxW){
-  const dataUrl = await fileToResizedDataURL(file, maxW || 1000);
-  if(storage){
-    try{
-      const ref = storage.ref().child(path + '_' + Date.now() + '.jpg');
-      await ref.putString(dataUrl, 'data_url');
-      return await ref.getDownloadURL();
-    }catch(e){ console.warn('storage upload failed, falling back to inline', e); }
+  const MAX_BYTES = 700000;
+  let w = maxW || 1000;
+  let quality = 0.82;
+  let dataUrl = await fileToResizedDataURL(file, w, quality);
+  let tries = 0;
+  while(dataUrl.length > MAX_BYTES && tries < 6){
+    quality = Math.max(0.35, quality - 0.12);
+    w = Math.round(w * 0.85);
+    dataUrl = await fileToResizedDataURL(file, w, quality);
+    tries++;
   }
-  return dataUrl; // fallback: store the data URL itself
+  if(dataUrl.length > MAX_BYTES){
+    throw new Error('ไฟล์รูปมีขนาดใหญ่เกินไป กรุณาเลือกรูปที่มีขนาดเล็กลง');
+  }
+  return dataUrl;
 }
 
 const COSPLAY_STYLES = ["อนิเมะ/มังงะ","เกม","ออริจินัลคาแรกเตอร์","ประวัติศาสตร์/ย้อนยุค","ภาพยนตร์/ซีรีส์","แฟนตาซี/ครีเจอร์"];
