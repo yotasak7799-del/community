@@ -20,6 +20,9 @@
   --accent:#e9e9ec; --accent-2:#bcbcc2; --accent-3:#87878e;
   --accent-text:#0a0a0b;
   --danger:#d05a5a; --good:#7fae7a; --warn:#c9a24f;
+  --gold:#d8b464; --gold-soft:#f2dfa8; --gold-deep:#a9791e;
+  --gold-grad:linear-gradient(135deg,#f7e8bb 0%,#d8b464 45%,#a9791e 85%,#e9cd8a 100%);
+  --gold-grad-soft:linear-gradient(150deg,rgba(216,180,100,.16),rgba(169,121,30,.06));
   --silver-grad:linear-gradient(150deg,#fdfdfe 0%,#dcdce0 30%,#a9a9b0 62%,#f2f2f4 100%);
   --silver-grad-soft:linear-gradient(150deg,#3a3a3f 0%,#2a2a2e 45%,#232326 100%);
   --shadow-1:0 1px 2px rgba(0,0,0,.5), 0 8px 20px -6px rgba(0,0,0,.55);
@@ -50,6 +53,17 @@ body::before{
     radial-gradient(rgba(255,255,255,.035) .6px, transparent .6px);
   background-size:3px 3px;
 }
+#bgFx{position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;}
+#bgFx .blob{position:absolute; border-radius:50%; filter:blur(60px); will-change:transform;}
+#bgFx .b1{width:420px;height:420px; left:-120px; top:-80px; background:radial-gradient(circle,rgba(255,255,255,.10),transparent 70%); animation:blobA 26s ease-in-out infinite;}
+#bgFx .b2{width:360px;height:360px; right:-100px; top:30%; background:radial-gradient(circle,rgba(216,180,100,.16),transparent 70%); animation:blobB 32s ease-in-out infinite;}
+#bgFx .b3{width:320px;height:320px; left:8%; bottom:-140px; background:radial-gradient(circle,rgba(255,255,255,.07),transparent 70%); animation:blobC 24s ease-in-out infinite;}
+#bgFx .b4{width:260px;height:260px; right:12%; bottom:10%; background:radial-gradient(circle,rgba(216,180,100,.10),transparent 70%); animation:blobD 30s ease-in-out infinite;}
+@keyframes blobA{0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(40px,60px) scale(1.15)} 66%{transform:translate(-20px,30px) scale(.9)}}
+@keyframes blobB{0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-60px,-40px) scale(1.2)}}
+@keyframes blobC{0%,100%{transform:translate(0,0) scale(1)} 40%{transform:translate(50px,-30px) scale(1.1)} 70%{transform:translate(-30px,-10px) scale(.95)}}
+@keyframes blobD{0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(30px,-50px) scale(1.18)}}
+@media (prefers-reduced-motion:reduce){#bgFx .blob{animation:none!important;}}
 h1,h2,h3,.disp{font-family:'Prompt','Noto Sans Thai',sans-serif; font-weight:600; letter-spacing:.01em;}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
@@ -429,10 +443,55 @@ legend{padding:0 6px; font-size:12px; color:var(--muted);}
 .risk-badge.risk-critical{background:rgba(220,40,40,.28); color:#ffb3b3; border:1px solid #a83a3a; box-shadow:0 0 10px rgba(220,60,60,.35);}
 .bl-detail{font-size:12.5px; color:#c9b6b6; margin-top:10px; line-height:1.65; white-space:pre-wrap;}
 .bl-disclaimer{font-size:11px; color:#9a7f7f; background:rgba(255,255,255,.02); border:1px dashed #4a2a2a; border-radius:12px; padding:10px 12px; margin-bottom:14px; line-height:1.6;}
+
+/* ---------------- Poll (โหวต) ---------------- */
+.poll-card{background:linear-gradient(165deg,var(--surface) 0%, var(--surface) 55%, #131315 100%); border:1px solid var(--line); border-radius:18px; padding:16px; position:relative; overflow:hidden; box-shadow:var(--shadow-1), var(--shadow-inset); transition:transform .15s, border-color .2s; cursor:pointer;}
+.poll-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold-grad); opacity:.55;}
+.poll-card:active{transform:scale(.985)}
+.poll-card + .poll-card{margin-top:12px;}
+.poll-status{display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:999px; font-size:10.5px; font-weight:700; letter-spacing:.03em; border:1px solid var(--line);}
+.poll-status.live{color:var(--gold-soft); border-color:rgba(216,180,100,.4); background:var(--gold-grad-soft);}
+.poll-status.live .dot-live{width:6px;height:6px;border-radius:50%;background:var(--gold); box-shadow:0 0 6px var(--gold); animation:dotPulse 1.6s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{opacity:1} 50%{opacity:.35}}
+.poll-status.ended{color:var(--muted); background:var(--surface2);}
+.poll-title{font-weight:700; font-size:15.5px; margin-top:10px; line-height:1.4;}
+.poll-desc{font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.55; white-space:pre-wrap;}
+.poll-meta{display:flex; align-items:center; gap:10px; margin-top:12px; font-size:11px; color:var(--muted2);}
+.poll-meta .sep{width:3px;height:3px;border-radius:50%;background:var(--muted2);}
+.poll-option{display:block; width:100%; text-align:left; position:relative; border:1px solid var(--line); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg,var(--bg2),var(--bg)); color:var(--text); font-size:13.5px; margin-top:9px; overflow:hidden; transition:border-color .15s, transform .12s; box-shadow:var(--shadow-inset);}
+.poll-option:active{transform:scale(.985)}
+.poll-option.selectable{cursor:pointer;}
+.poll-option.selectable:hover{border-color:#48484d;}
+.poll-option.picked{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold) inset, 0 4px 14px rgba(216,180,100,.15);}
+.poll-opt-row{display:flex; align-items:center; gap:10px; position:relative; z-index:1;}
+.poll-check{width:19px;height:19px;border-radius:6px;border:1.5px solid var(--line-soft); flex:none; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.02); transition:.15s;}
+.poll-option.picked .poll-check{background:var(--gold-grad); border-color:var(--gold);}
+.poll-check svg{width:12px;height:12px;color:#1a1408; opacity:0; transform:scale(.6); transition:.15s;}
+.poll-option.picked .poll-check svg{opacity:1; transform:scale(1);}
+.poll-check.radio{border-radius:50%;}
+.poll-opt-label{flex:1; font-weight:500;}
+.poll-opt-pct{font-weight:700; font-size:12.5px; color:var(--gold-soft); font-variant-numeric:tabular-nums;}
+.poll-bar-track{position:absolute; inset:0; z-index:0; background:transparent;}
+.poll-bar-fill{position:absolute; top:0; left:0; bottom:0; background:var(--gold-grad-soft); border-right:1px solid rgba(216,180,100,.25); transition:width .5s cubic-bezier(.2,.8,.2,1); width:0%;}
+.poll-option.leading .poll-bar-fill{background:linear-gradient(90deg,rgba(216,180,100,.22),rgba(216,180,100,.08));}
+.poll-option.leading .poll-opt-pct{color:var(--gold);}
+.poll-votecount{font-size:11px; color:var(--muted); margin-top:2px;}
+.poll-countdown{font-variant-numeric:tabular-nums; font-weight:600;}
+.poll-optRow-edit{display:flex; align-items:center; gap:8px; margin-top:8px;}
+.poll-optRow-edit input{flex:1;}
+.poll-fab{position:fixed; bottom:calc(94px + env(safe-area-inset-bottom,0px)); left:calc((100% - 430px)/2 + 14px); z-index:59; display:flex; align-items:center; gap:8px; padding:12px 18px; border-radius:999px; background:var(--gold-grad); color:#241c07; font-weight:700; font-size:13px; box-shadow:0 8px 22px rgba(216,180,100,.35), inset 0 1px 0 rgba(255,255,255,.6); border:none;}
+@media (max-width:460px){.poll-fab{left:14px}}
+.switch{position:relative; display:inline-block; width:42px; height:24px; flex:none;}
+.switch input{opacity:0; width:0; height:0;}
+.switch .slider{position:absolute; inset:0; background:var(--surface2); border:1px solid var(--line); border-radius:999px; transition:.2s; cursor:pointer;}
+.switch .slider::before{content:'';position:absolute; width:17px;height:17px; left:2px; top:2px; background:#e9e9ec; border-radius:50%; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.4);}
+.switch input:checked + .slider{background:var(--gold-grad-soft); border-color:var(--gold);}
+.switch input:checked + .slider::before{transform:translateX(18px); background:var(--gold-grad);}
 </style>
 </head>
 <body>
 <div id="bootSplash"><div class="boot-mark">H</div><div class="spinner"></div></div>
+<div id="bgFx"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><span class="blob b4"></span></div>
 <div id="frame">
   <div id="app"></div>
 </div>
@@ -592,8 +651,8 @@ let state = {
   },
   adminAuthed: sessionStorage.getItem('hijime_admin')==='1',
   allUsers:[], missions:[], missionCats:[], events:[], wheels:[], posts:[],
-  rewards:[], discordSchedule:[], allRedemptions:[], blacklist:[],
-  myRedemptions:[], myCheckins:[],
+  rewards:[], discordSchedule:[], allRedemptions:[], blacklist:[], polls:[],
+  myRedemptions:[], myCheckins:[], pollOptionDraftCount:2,
   floatOpen:false, openComments:{}, leaderboardTab:'gp', blacklistTab:'trade'
 };
 const DEFAULT_LEVELS = [
@@ -697,6 +756,12 @@ async function loadPosts(){
     state.posts = snap.docs.map(d=>({id:d.id, ...d.data()}));
   }catch(e){ console.warn('loadPosts failed', e); }
 }
+async function loadPolls(){
+  try{
+    const snap = await db.collection('polls').orderBy('createdAt','desc').get();
+    state.polls = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.warn('loadPolls failed', e); }
+}
 async function loadRewards(){
   try{
     const snap = await db.collection('rewards').orderBy('createdAt','desc').get();
@@ -764,7 +829,7 @@ auth.onAuthStateChanged(async (u)=>{
   render();
   // load the rest of the app's shared data (non-blocking, each collection isolated so one failure doesn't break the rest)
   if(u){
-    await Promise.allSettled([loadAllUsers(), loadMissions(), loadMissionCats(), loadEvents(), loadWheels(), loadPosts(), loadRewards(), loadDiscordSchedule(), loadMyRedemptions(), loadMyCheckins(), loadBlacklist()]);
+    await Promise.allSettled([loadAllUsers(), loadMissions(), loadMissionCats(), loadEvents(), loadWheels(), loadPosts(), loadRewards(), loadDiscordSchedule(), loadMyRedemptions(), loadMyCheckins(), loadBlacklist(), loadPolls()]);
     render();
   }
 });
@@ -806,6 +871,10 @@ const ICONS = {
   headset:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13a8 8 0 0116 0"/><rect x="2.5" y="13" width="5" height="7" rx="2"/><rect x="16.5" y="13" width="5" height="7" rx="2"/><path d="M20 20v1a3 3 0 01-3 3h-3"/></svg>`,
   calendar:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>`,
   medal:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="15" r="6"/><path d="M9 9.5L7 3h3l2 5"/><path d="M15 9.5L17 3h-3l-2 5"/><path d="M12 12v6"/></svg>`,
+  vote:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><rect x="6" y="10" width="4" height="11"/><rect x="14" y="6" width="4" height="15"/><path d="M4 7l6-4 6 4"/><circle cx="10" cy="4" r="1" fill="currentColor" stroke="none"/></svg>`,
+  plus:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg>`,
+  clock:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>`,
   discordLogo:`<svg viewBox="0 0 245 240" fill="currentColor"><path d="M104 103c-5.7 0-10.2 5-10.2 11s4.6 11 10.2 11c5.7 0 10.2-5 10.2-11 .1-6-4.5-11-10.2-11zm38 0c-5.7 0-10.2 5-10.2 11s4.6 11 10.2 11c5.7 0 10.3-5 10.3-11s-4.6-11-10.3-11z"/><path d="M189.5 20h-134C44.6 20 36 28.6 36 39.2v162.7c0 10.6 8.6 19.2 19.5 19.2h113.4l-5.3-18.5 12.8 11.9 12.1 11.2 21.5 19V39.2C210 28.6 201.4 20 189.5 20zM148.4 158.3s-3.6-4.3-6.6-8.1c13.1-3.7 18.1-11.9 18.1-11.9-4.1 2.7-8 4.6-11.5 5.9-5 2.1-9.8 3.5-14.5 4.3-9.6 1.8-18.4 1.3-25.9-.1-5.7-1.1-10.6-2.7-14.7-4.3-2.3-.9-4.8-2-7.3-3.4-.3-.2-.6-.3-.9-.5-.2-.1-.3-.2-.4-.3-1.8-1-2.8-1.7-2.8-1.7s4.8 8 17.5 11.8c-3 3.8-6.7 8.3-6.7 8.3-22.1-.7-30.5-15.2-30.5-15.2 0-32.2 14.4-58.3 14.4-58.3 14.4-10.8 28.1-10.5 28.1-10.5l1 1.2c-18 5.2-26.3 13.1-26.3 13.1s2.2-1.2 5.9-2.9c10.7-4.7 19.2-6 22.7-6.3.6-.1 1.1-.2 1.7-.2 6.1-.8 13-.1 20 2.4 9.3 3.3 19.3 10.3 19.3 10.3s-7.9-7.5-24.9-12.7l1.4-1.6s13.7-.3 28.1 10.5c0 0 14.4 26.1 14.4 58.3 0 0-8.5 14.5-30.6 15.2z"/></svg>`
 };
 function bottomNav(){
@@ -813,6 +882,7 @@ function bottomNav(){
     ['#/profile', ICONS.home, 'โปรไฟล์'],
     ['#/members', ICONS.users, 'สมาชิก'],
     ['#/feed', ICONS.camera, 'ผลงาน'],
+    ['#/polls', ICONS.vote, 'โหวต'],
     ['#/missions', ICONS.flag, 'ภารกิจ'],
     ['#/events', ICONS.bell, 'กิจกรรม'],
     ['#/wheel', ICONS.spin, 'วงล้อ'],
@@ -1607,6 +1677,163 @@ function attachPostFormGeoHandler(){
   });
 }
 
+/* ---------------- Poll (กระทู้โหวต) ---------------- */
+function pollIsEnded(p){
+  if(!p.endAt) return false;
+  const end = p.endAt.toDate ? p.endAt.toDate() : new Date(p.endAt);
+  return Date.now() > end.getTime();
+}
+function pollTimeLabel(p){
+  if(!p.endAt) return 'ไม่กำหนดเวลา';
+  const end = p.endAt.toDate ? p.endAt.toDate() : new Date(p.endAt);
+  const diff = end.getTime() - Date.now();
+  if(diff <= 0) return 'ปิดโหวตแล้ว';
+  const mins = Math.floor(diff/60000);
+  const days = Math.floor(mins/1440), hrs = Math.floor((mins%1440)/60), m = mins%60;
+  if(days>0) return `เหลือ ${days} วัน ${hrs} ชม.`;
+  if(hrs>0) return `เหลือ ${hrs} ชม. ${m} นาที`;
+  return `เหลือ ${Math.max(m,1)} นาที`;
+}
+function pollVoterCount(p){ return Object.keys(p.votes||{}).length; }
+function pollOptionCount(p, optId){
+  const votes = p.votes||{};
+  let c = 0;
+  Object.values(votes).forEach(arr=>{ if((arr||[]).includes(optId)) c++; });
+  return c;
+}
+function pagePolls(){
+  const list = (state.polls||[]).slice().sort((a,b)=>{
+    const aEnded = pollIsEnded(a), bEnded = pollIsEnded(b);
+    if(aEnded!==bEnded) return aEnded? 1 : -1;
+    return 0;
+  });
+  return shell(`
+    <button class="btn btn-block" style="background:var(--gold-grad); color:#241c07; border-color:var(--gold); font-weight:700;" data-action="add-poll">+ ตั้งกระทู้โหวตใหม่</button>
+    <div style="margin-top:14px;">
+      ${list.map(pollCard).join('') || `<div class="empty">ยังไม่มีกระทู้โหวต เป็นคนแรกที่ตั้งกระทู้เลย!</div>`}
+    </div>
+  `, {title:'กระทู้โหวต'});
+}
+function pollCard(p){
+  const ended = pollIsEnded(p);
+  const voters = pollVoterCount(p);
+  const author = state.allUsers.find(u=>u.id===p.createdBy);
+  const authorName = p.createdByName || (author&&(author.stageName||author.nickname)) || 'สมาชิก';
+  return `
+  <div class="poll-card" data-action="goto" data-route="#/poll:${p.id}">
+    <div class="between">
+      <span class="poll-status ${ended?'ended':'live'}">${ended?'ปิดโหวตแล้ว':`<span class="dot-live"></span>กำลังโหวต`}</span>
+      ${p.allowMultiple?'<span class="pill">เลือกได้หลายข้อ</span>':''}
+    </div>
+    <div class="poll-title">${esc(p.title)}</div>
+    ${p.description?`<div class="poll-desc">${esc(p.description).slice(0,110)}${p.description.length>110?'…':''}</div>`:''}
+    <div class="poll-meta">
+      <span>${(p.options||[]).length} ตัวเลือก</span><span class="sep"></span>
+      <span>${voters} คนโหวตแล้ว</span><span class="sep"></span>
+      <span class="poll-countdown">${ended?'สิ้นสุดแล้ว':pollTimeLabel(p)}</span>
+    </div>
+    <div class="muted" style="font-size:10.5px;margin-top:8px;">โดย ${esc(authorName)}</div>
+  </div>`;
+}
+function pagePollView(id){
+  const p = (state.polls||[]).find(x=>x.id===id);
+  if(!p) return shell(`<div class="empty">ไม่พบกระทู้โหวตนี้</div>`, {title:'กระทู้โหวต'});
+  const ended = pollIsEnded(p);
+  const uid = state.user && state.user.uid;
+  const myVotes = (p.votes && p.votes[uid]) || [];
+  const hasVoted = myVotes.length>0;
+  const showResults = ended || hasVoted;
+  const voters = pollVoterCount(p);
+  const author = state.allUsers.find(u=>u.id===p.createdBy);
+  const authorName = p.createdByName || (author&&(author.stageName||author.nickname)) || 'สมาชิก';
+  const isOwner = uid && uid===p.createdBy;
+  const counts = (p.options||[]).map(o=>pollOptionCount(p,o.id));
+  const maxCount = Math.max(0,...counts);
+  const optionsHTML = (p.options||[]).map((o,i)=>{
+    const c = counts[i];
+    const pct = voters>0 ? Math.round((c/voters)*100) : 0;
+    const picked = myVotes.includes(o.id);
+    const leading = showResults && maxCount>0 && c===maxCount;
+    if(showResults){
+      return `<div class="poll-option ${picked?'picked':''} ${leading?'leading':''}">
+        <div class="poll-bar-track"><div class="poll-bar-fill" style="width:${pct}%"></div></div>
+        <div class="poll-opt-row">
+          ${picked?`<span class="poll-check" style="opacity:1;background:var(--gold-grad);border-color:var(--gold);">${ICONS.check}</span>`:''}
+          <span class="poll-opt-label">${esc(o.text)}</span>
+          <span class="poll-opt-pct">${pct}%</span>
+        </div>
+        <div class="poll-votecount">${c} โหวต</div>
+      </div>`;
+    }
+    return `<button type="button" class="poll-option selectable" data-action="pick-poll-opt" data-id="${o.id}" data-multi="${p.allowMultiple?1:0}">
+      <div class="poll-opt-row">
+        <span class="poll-check ${p.allowMultiple?'':'radio'}" data-check="${o.id}">${ICONS.check}</span>
+        <span class="poll-opt-label">${esc(o.text)}</span>
+      </div>
+    </button>`;
+  }).join('');
+  return shell(`
+    <div class="card">
+      <div class="between">
+        <span class="poll-status ${ended?'ended':'live'}">${ended?'ปิดโหวตแล้ว':`<span class="dot-live"></span>กำลังโหวต`}</span>
+        ${isOwner?`<button class="icon-btn" data-action="del-poll" data-id="${p.id}" title="ลบกระทู้">✕</button>`:''}
+      </div>
+      <div class="poll-title" style="font-size:18px;">${esc(p.title)}</div>
+      ${p.description?`<div class="poll-desc" style="font-size:13.5px;">${esc(p.description)}</div>`:''}
+      <div class="poll-meta" style="margin-top:14px;">
+        <span>${voters} คนโหวตแล้ว</span><span class="sep"></span>
+        <span class="poll-countdown">${pollTimeLabel(p)}</span>
+      </div>
+      <div class="muted" style="font-size:10.5px;margin-top:4px;">ตั้งโดย ${esc(authorName)} ${p.allowMultiple?'· เลือกได้หลายข้อ':'· เลือกได้ 1 ข้อ'}</div>
+      <div id="pollOptions" style="margin-top:14px;" data-poll-id="${p.id}">${optionsHTML}</div>
+      ${!showResults ? `<button class="btn btn-block" style="margin-top:14px;background:var(--gold-grad);color:#241c07;border-color:var(--gold);font-weight:700;" data-action="submit-poll-vote" data-id="${p.id}">โหวตเลย</button>` : ''}
+      ${(showResults && !ended) ? `<div class="hint" style="margin-top:10px;">คุณโหวตแล้ว รอผลเมื่อปิดโหวต หรือรอผู้อื่นโหวตเพิ่มเติม</div>` : ''}
+    </div>
+  `, {title:'กระทู้โหวต'});
+}
+function pollOptionRow(val){
+  return `<div class="row poll-optRow-edit">
+    <input type="text" class="pl_opt" placeholder="ตัวเลือกโหวต" value="${esc(val||'')}">
+    <button type="button" class="icon-btn" onclick="this.closest('.poll-optRow-edit').remove()">✕</button>
+  </div>`;
+}
+function pollFormModal(){
+  return `
+  <div class="modal-back" data-action="close-modal">
+    <div class="modal"><div class="modal-handle"></div>
+      <div class="between"><h3 style="margin:0">ตั้งกระทู้โหวตใหม่</h3><button class="icon-btn" data-action="close-modal">✕</button></div>
+      <form id="pollForm">
+        <label>หัวข้อโหวต</label><input type="text" id="pl_title" placeholder="อยากรู้ความเห็นเรื่องอะไร?" required>
+        <label>รายละเอียดเพิ่มเติม (ถ้ามี)</label><textarea id="pl_desc" placeholder="อธิบายเพิ่มเติม..."></textarea>
+        <label>ตัวเลือก</label>
+        <div id="pollOptRows">
+          ${pollOptionRow('')}${pollOptionRow('')}
+        </div>
+        <button type="button" class="btn btn-sm" id="addPollOptRow" style="margin-top:8px;">+ เพิ่มตัวเลือก</button>
+        <div class="between" style="margin-top:16px;">
+          <div><label style="margin:0;">เลือกได้หลายข้อ</label><div class="muted" style="font-size:11px;">ให้ผู้โหวตเลือกได้มากกว่า 1 ตัวเลือก</div></div>
+          <label class="switch"><input type="checkbox" id="pl_multi"><span class="slider"></span></label>
+        </div>
+        <label>สิ้นสุดการโหวต</label>
+        <input type="datetime-local" id="pl_end" required>
+        <button type="submit" class="btn btn-block" style="margin-top:16px;background:var(--gold-grad);color:#241c07;border-color:var(--gold);font-weight:700;">สร้างกระทู้โหวต</button>
+      </form>
+    </div>
+  </div>`;
+}
+function attachPollOptRowHandler(){
+  const btn = document.getElementById('addPollOptRow');
+  if(btn) btn.addEventListener('click', ()=>{
+    document.getElementById('pollOptRows').insertAdjacentHTML('beforeend', pollOptionRow(''));
+  });
+  const endInp = document.getElementById('pl_end');
+  if(endInp && !endInp.value){
+    const d = new Date(Date.now() + 24*3600*1000);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    endInp.value = d.toISOString().slice(0,16);
+  }
+}
+
 /* ---------------- Admin ---------------- */
 function pageAdmin(){
   if(!state.adminAuthed) return shell(pageLoginAdminOnly(), {title:'เข้าสู่ระบบแอดมิน', back:false, nav:false});
@@ -2025,6 +2252,8 @@ function render(){
       case '#/member': html = pageMemberView(param); break;
       case '#/membercard': html = pageMemberCard(param); break;
       case '#/feed': html = pagePosts(param); break;
+      case '#/polls': html = pagePolls(); break;
+      case '#/poll': html = pagePollView(param); break;
       case '#/missions': html = pageMissions(); break;
       case '#/mission': html = pageMissionView(param); break;
       case '#/events': html = pageEvents(); break;
@@ -2090,6 +2319,7 @@ function afterRender(path, param){
       }catch(e){ console.warn('qr render failed', e); }
     }
   }
+  if(path==='#/poll'){ window.__pollPicks = []; }
   if(path==='#/history'){ loadHistoryInto(); }
   if(path==='#/wheel'){ drawWheelCanvas(); }
   if(path==='#/admin' && state.adminAuthed && state.adminTab==='levels'){ attachLevelRowHandler(); }
@@ -2255,6 +2485,28 @@ document.addEventListener('submit', async (e)=>{
     window.__postGeo = null;
     await loadPosts(); state.modal=null; render(); toast('โพสต์ผลงานแล้ว');
   }
+  if(e.target.id==='pollForm'){
+    const title = $('#pl_title').value.trim();
+    const description = $('#pl_desc').value.trim();
+    const multi = document.getElementById('pl_multi').checked;
+    const endRaw = $('#pl_end').value;
+    const opts = Array.from(document.querySelectorAll('.pl_opt')).map(i=>i.value.trim()).filter(Boolean);
+    if(!title){ toast('กรุณาใส่หัวข้อโหวต'); return; }
+    if(opts.length<2){ toast('กรุณาใส่ตัวเลือกอย่างน้อย 2 ข้อ'); return; }
+    if(!endRaw){ toast('กรุณากำหนดเวลาสิ้นสุดการโหวต'); return; }
+    const endDate = new Date(endRaw);
+    if(isNaN(endDate.getTime()) || endDate.getTime()<=Date.now()){ toast('กรุณาเลือกเวลาสิ้นสุดในอนาคต'); return; }
+    const options = opts.map((text,i)=>({id:'o'+i+'_'+Date.now().toString(36), text}));
+    const authorName = (state.profile && (state.profile.stageName||state.profile.nickname)) || 'สมาชิก';
+    const data = {
+      title, description, options, allowMultiple: multi,
+      endAt: firebase.firestore.Timestamp.fromDate(endDate),
+      votes:{}, createdBy: state.user.uid, createdByName: authorName,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    await db.collection('polls').add(data);
+    await loadPolls(); state.modal=null; render(); toast('ตั้งกระทู้โหวตแล้ว');
+  }
   if(e.target.id==='missionForm'){
     const id = e.target.querySelector('button[type=submit]').dataset.id;
     let posterURL = state.editingMission?.posterURL || '';
@@ -2393,6 +2645,42 @@ document.addEventListener('click', async (e)=>{
   }
   if(action==='add-portfolio'){ state.modal = portfolioModal(); render(); return; }
   if(action==='add-post'){ state.modal = postFormModal(); window.__postGeo=null; render(); attachPostFormGeoHandler(); return; }
+  if(action==='add-poll'){
+    if(!state.user){ toast('กรุณาเข้าสู่ระบบก่อน'); return; }
+    state.modal = pollFormModal(); render(); attachPollOptRowHandler(); return;
+  }
+  if(action==='del-poll'){
+    if(!confirm('ต้องการลบกระทู้โหวตนี้หรือไม่?')) return;
+    await db.collection('polls').doc(t.dataset.id).delete();
+    await loadPolls(); nav('#/polls', false); toast('ลบกระทู้โหวตแล้ว'); return;
+  }
+  if(action==='pick-poll-opt'){
+    const optId = t.dataset.id, multi = t.dataset.multi==='1';
+    window.__pollPicks = window.__pollPicks || [];
+    if(multi){
+      const idx = window.__pollPicks.indexOf(optId);
+      if(idx>=0) window.__pollPicks.splice(idx,1); else window.__pollPicks.push(optId);
+    } else {
+      window.__pollPicks = [optId];
+      document.querySelectorAll('#pollOptions .poll-option').forEach(el=>el.classList.remove('picked'));
+    }
+    t.classList.toggle('picked', window.__pollPicks.includes(optId));
+    return;
+  }
+  if(action==='submit-poll-vote'){
+    if(!state.user){ toast('กรุณาเข้าสู่ระบบก่อน'); return; }
+    const id = t.dataset.id;
+    const picks = window.__pollPicks || [];
+    if(!picks.length){ toast('กรุณาเลือกอย่างน้อย 1 ตัวเลือก'); return; }
+    const p = state.polls.find(x=>x.id===id);
+    if(!p || pollIsEnded(p)){ toast('กระทู้นี้ปิดโหวตแล้ว'); return; }
+    await db.collection('polls').doc(id).update({ ['votes.'+state.user.uid]: picks });
+    if(!p.votes) p.votes = {};
+    p.votes[state.user.uid] = picks;
+    window.__pollPicks = [];
+    render(); toast('บันทึกโหวตของคุณแล้ว');
+    return;
+  }
   if(action==='toggle-like'){
     const id = t.dataset.id;
     if(!state.user){ toast('กรุณาเข้าสู่ระบบก่อน'); return; }
