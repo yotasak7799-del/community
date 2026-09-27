@@ -136,6 +136,8 @@ textarea{resize:vertical; min-height:80px}
 label{font-size:12px; color:var(--muted); display:block; margin:12px 0 6px; letter-spacing:.02em;}
 .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
 .pill{display:inline-flex; align-items:center; padding:5px 12px; border-radius:999px; background:var(--surface2); border:1px solid var(--line); font-size:12px; color:var(--muted); transition:.15s; box-shadow:var(--shadow-inset);}
+.icon-sm{width:13px;height:13px;flex:none;display:inline-block;vertical-align:-2px;}
+.icon-sm svg{width:100%;height:100%;display:block;}
 .pill.on{background:var(--silver-grad); color:var(--accent-text); border-color:#dcdce0; font-weight:600; box-shadow:0 2px 8px rgba(210,210,220,.2), inset 0 1px 0 rgba(255,255,255,.6);}
 .char-pill{display:inline-flex; align-items:center; gap:6px; padding:6px 8px 6px 14px; border-radius:999px; background:var(--surface2); border:1px solid var(--line); font-size:12.5px; margin:0 6px 6px 0; animation:cardIn .25s cubic-bezier(.2,.8,.2,1) both; box-shadow:var(--shadow-inset);}
 .char-pill button{width:18px;height:18px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--muted);font-size:10px;display:flex;align-items:center;justify-content:center;flex:none;transition:.15s}
@@ -171,6 +173,17 @@ label{font-size:12px; color:var(--muted); display:block; margin:12px 0 6px; lett
   z-index:50; max-width:220px;
 }
 @media (max-width:460px){.float-status{right:12px}}
+.discord-fab{
+  position:fixed; bottom:calc(94px + env(safe-area-inset-bottom,0px)); right:calc((100% - 430px)/2 + 14px);
+  z-index:60; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(160deg,#5865f2,#3f47b8); color:#fff; border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 8px 22px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.25);
+  opacity:.42; transition:opacity .25s ease, transform .2s cubic-bezier(.2,.8,.2,1);
+}
+.discord-fab svg{width:23px;height:23px;}
+.discord-fab:hover, .discord-fab:focus-visible{opacity:1; transform:translateY(-2px) scale(1.05);}
+.discord-fab:active{transform:scale(.92); opacity:1;}
+@media (max-width:460px){.discord-fab{right:14px}}
 .float-toggle{
   width:40px;height:40px;border-radius:50%;background:rgba(28,28,31,.55); backdrop-filter:blur(10px);
   border:1px solid rgba(255,255,255,.09); display:flex; align-items:center; justify-content:center;
@@ -291,16 +304,18 @@ legend{padding:0 6px; font-size:12px; color:var(--muted);}
   width:100%; max-width:340px; border-radius:26px; position:relative; overflow:hidden;
   padding:20px 20px 22px; color:#f3f3f1;
   background:
-    radial-gradient(140% 90% at 8% 0%, rgba(255,255,255,.10), transparent 55%),
-    linear-gradient(160deg,#1c1c20 0%, #131315 55%, #0c0c0e 100%);
-  border:1px solid #34343a;
-  box-shadow:0 2px 8px rgba(0,0,0,.5), 0 26px 60px -18px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.06);
+    radial-gradient(140% 90% at 8% 0%, rgba(255,239,205,.09), transparent 55%),
+    radial-gradient(120% 80% at 100% 110%, rgba(180,180,255,.05), transparent 60%),
+    linear-gradient(160deg,#1e1c17 0%, #17151a 45%, #0c0c0e 100%);
+  border:1px solid #3a352a;
+  box-shadow:0 2px 8px rgba(0,0,0,.5), 0 26px 60px -18px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.07);
   animation:cardIn .45s cubic-bezier(.2,.8,.2,1) both;
   user-select:none; -webkit-user-select:none;
 }
-.mc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);}
+.mc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(233,201,138,.45),transparent);}
+.mc-card::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 60px rgba(0,0,0,.35);}
 .mc-shine{position:absolute; top:-60%; left:-20%; width:140%; height:160%; pointer-events:none;
-  background:linear-gradient(115deg,transparent 40%, rgba(255,255,255,.06) 50%, transparent 60%);
+  background:linear-gradient(115deg,transparent 40%, rgba(255,244,220,.08) 50%, transparent 60%);
   background-size:220% 220%; animation:pointsShine 4.5s ease-in-out infinite;}
 .mc-top{display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;}
 .mc-brand{display:flex; align-items:center; gap:8px; min-width:0;}
@@ -308,23 +323,31 @@ legend{padding:0 6px; font-size:12px; color:var(--muted);}
 .mc-brand-mark{width:26px;height:26px;border-radius:8px;flex:none;background:var(--silver-grad);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:var(--accent-text);}
 .mc-brand-name{font-weight:700; font-size:14px; letter-spacing:.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   background:linear-gradient(180deg,#ffffff,#c8c8ce); -webkit-background-clip:text; background-clip:text; color:transparent;}
-.mc-level{flex:none; font-size:10.5px; font-weight:700; letter-spacing:.03em; padding:5px 10px; border-radius:999px;
-  background:var(--silver-grad); color:var(--accent-text); box-shadow:0 3px 10px rgba(0,0,0,.35);}
+.mc-level{flex:none; font-size:10.5px; font-weight:800; letter-spacing:.03em; padding:5px 11px; border-radius:999px;
+  background:linear-gradient(150deg,#f7ecd0 0%,#e6c789 45%,#c9a24f 100%); color:#2a2109;
+  box-shadow:0 3px 10px rgba(201,162,79,.35), inset 0 1px 0 rgba(255,255,255,.6);}
 .mc-mid{display:flex; align-items:center; gap:14px; margin-top:20px; position:relative; z-index:1;}
 .mc-avatar{width:66px;height:66px;border-radius:20px;object-fit:cover;flex:none;
-  box-shadow:0 0 0 2px rgba(10,10,11,.9), 0 0 0 3.5px rgba(233,233,236,.35), 0 8px 20px rgba(0,0,0,.5); pointer-events:none;}
+  box-shadow:0 0 0 2px rgba(10,10,11,.9), 0 0 0 3.5px rgba(233,201,138,.4), 0 8px 20px rgba(0,0,0,.5); pointer-events:none;}
 .mc-id{min-width:0;}
 .mc-stage{font-weight:700; font-size:17px; line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .mc-nick{font-size:12px; color:var(--muted); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .mc-uid{font-size:11.5px; color:var(--muted2); margin-top:6px; font-variant-numeric:tabular-nums; letter-spacing:.06em;}
-.mc-stats{display:flex; align-items:center; margin-top:18px; padding:12px 14px; border-radius:16px; position:relative; z-index:1;
+.mc-since{display:inline-flex; align-items:center; gap:6px; margin-top:14px; padding:6px 12px; border-radius:999px; position:relative; z-index:1;
+  background:linear-gradient(135deg,rgba(233,201,138,.14),rgba(233,201,138,.04)); border:1px solid rgba(233,201,138,.28);
+  font-size:11.5px; font-weight:600; color:#e9c98a; letter-spacing:.01em;}
+.mc-since svg{width:13px;height:13px;flex:none;}
+.mc-stats{display:flex; align-items:center; margin-top:14px; padding:12px 14px; border-radius:16px; position:relative; z-index:1;
   background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.015)); border:1px solid rgba(255,255,255,.09);}
 .mc-stat{flex:1; text-align:center;}
 .mc-stat-lbl{font-size:10px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase;}
 .mc-stat-val{font-size:18px; font-weight:800; font-variant-numeric:tabular-nums; margin-top:3px; color:#f3f3f1;}
+.mc-stat-primary .mc-stat-val{font-size:22px; background:linear-gradient(150deg,#f7ecd0,#c9a24f); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.mc-stat-primary .mc-stat-lbl{color:#d8b978;}
 .mc-divider-v{width:1px; align-self:stretch; background:rgba(255,255,255,.1); margin:0 6px;}
 .mc-bottom{display:flex; flex-direction:column; align-items:center; margin-top:20px; position:relative; z-index:1;}
-.mc-bottom canvas{width:132px; height:132px; border-radius:14px; background:#fff; padding:8px; box-shadow:0 8px 22px rgba(0,0,0,.4); pointer-events:none;}
+.mc-qr-card{background:#fff; border-radius:16px; padding:10px; display:inline-flex; box-shadow:0 8px 22px rgba(0,0,0,.4), inset 0 0 0 1px rgba(0,0,0,.04);}
+.mc-bottom canvas{display:block; border-radius:6px; pointer-events:none;}
 .mc-scanhint{font-size:10.5px; color:var(--muted); margin-top:8px; letter-spacing:.03em;}
 .mc-note{font-size:11.5px; color:var(--muted2); text-align:center; margin-top:14px; max-width:300px; line-height:1.6;}
 
@@ -412,6 +435,9 @@ legend{padding:0 6px; font-size:12px; color:var(--muted);}
   <div id="app"></div>
 </div>
 <div id="toast" class="toast"></div>
+<a class="discord-fab" href="https://discord.gg/UxVTtDQc8" target="_blank" rel="noopener" aria-label="เข้าร่วม Discord" title="เข้าร่วม Discord">
+  <svg viewBox="0 0 245 240" fill="currentColor"><path d="M104 103c-5.7 0-10.2 5-10.2 11s4.6 11 10.2 11c5.7 0 10.2-5 10.2-11 .1-6-4.5-11-10.2-11zm38 0c-5.7 0-10.2 5-10.2 11s4.6 11 10.2 11c5.7 0 10.3-5 10.3-11s-4.6-11-10.3-11z"/><path d="M189.5 20h-134C44.6 20 36 28.6 36 39.2v162.7c0 10.6 8.6 19.2 19.5 19.2h113.4l-5.3-18.5 12.8 11.9 12.1 11.2 21.5 19V39.2C210 28.6 201.4 20 189.5 20zM148.4 158.3s-3.6-4.3-6.6-8.1c13.1-3.7 18.1-11.9 18.1-11.9-4.1 2.7-8 4.6-11.5 5.9-5 2.1-9.8 3.5-14.5 4.3-9.6 1.8-18.4 1.3-25.9-.1-5.7-1.1-10.6-2.7-14.7-4.3-2.3-.9-4.8-2-7.3-3.4-.3-.2-.6-.3-.9-.5-.2-.1-.3-.2-.4-.3-1.8-1-2.8-1.7-2.8-1.7s4.8 8 17.5 11.8c-3 3.8-6.7 8.3-6.7 8.3-22.1-.7-30.5-15.2-30.5-15.2 0-32.2 14.4-58.3 14.4-58.3 14.4-10.8 28.1-10.5 28.1-10.5l1 1.2c-18 5.2-26.3 13.1-26.3 13.1s2.2-1.2 5.9-2.9c10.7-4.7 19.2-6 22.7-6.3.6-.1 1.1-.2 1.7-.2 6.1-.8 13-.1 20 2.4 9.3 3.3 19.3 10.3 19.3 10.3s-7.9-7.5-24.9-12.7l1.4-1.6s13.7-.3 28.1 10.5c0 0 14.4 26.1 14.4 58.3 0 0-8.5 14.5-30.6 15.2z"/></svg>
+</a>
 
 <script>
 /* ---------------- Firebase ---------------- */
@@ -449,6 +475,70 @@ function calcAge(dob){
   let a = n.getFullYear()-b.getFullYear();
   if(n.getMonth()<b.getMonth() || (n.getMonth()===b.getMonth() && n.getDate()<b.getDate())) a--;
   return a;
+}
+function fmtEventDate(dateStr, timeStr){
+  if(!dateStr) return '';
+  const d = new Date(dateStr+'T00:00:00');
+  if(isNaN(d.getTime())) return '';
+  const datePart = d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
+  return timeStr ? `${datePart} · ${esc(timeStr)} น.` : datePart;
+}
+function memberSinceText(u){
+  const ts = u && u.createdAt;
+  if(!ts) return null;
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  if(!d || isNaN(d.getTime())) return null;
+  const now = new Date();
+  let months = (now.getFullYear()-d.getFullYear())*12 + (now.getMonth()-d.getMonth());
+  if(now.getDate() < d.getDate()) months--;
+  if(months < 0) months = 0;
+  const years = Math.floor(months/12), rem = months%12;
+  if(years<=0 && rem<1) return 'สมาชิกใหม่';
+  if(years<=0) return `${rem} เดือน`;
+  if(rem===0) return `${years} ปี`;
+  return `${years} ปี ${rem} เดือน`;
+}
+/* ---------------- calendar export (.ics) ---------------- */
+function icsEscape(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n'); }
+function icsDate(dateStr, timeStr){
+  const d = dateStr ? new Date(dateStr+'T'+(timeStr||'00:00')+':00') : null;
+  if(!d || isNaN(d.getTime())) return null;
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`;
+}
+function downloadEventToCalendar(ev){
+  try{
+    const startStr = icsDate(ev.eventDate, ev.eventTime||'09:00');
+    let endStr;
+    if(ev.eventDate){
+      const d = new Date(ev.eventDate+'T'+(ev.eventTime||'09:00')+':00');
+      d.setHours(d.getHours()+2);
+      const p = n => String(n).padStart(2,'0');
+      endStr = `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`;
+    }
+    const now = new Date();
+    const p = n => String(n).padStart(2,'0');
+    const stamp = `${now.getFullYear()}${p(now.getMonth()+1)}${p(now.getDate())}T${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}Z`;
+    const dtLine = startStr ? `DTSTART:${startStr}\r\nDTEND:${endStr}` : `DTSTART;VALUE=DATE:${stamp.slice(0,8)}`;
+    const desc = [ev.description, ev.duration?('ระยะเวลา: '+ev.duration):''].filter(Boolean).join('\n');
+    const ics = [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//'+ (state.siteConfig.siteName||'Hijime') +'//Events//TH','CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      'UID:'+ (ev.id||uid8()) +'@'+ (state.siteConfig.siteName||'hijime').replace(/\s+/g,'').toLowerCase(),
+      'DTSTAMP:'+stamp,
+      dtLine,
+      'SUMMARY:'+icsEscape(ev.title||'กิจกรรม'),
+      desc?('DESCRIPTION:'+icsEscape(desc)):'',
+      'END:VEVENT','END:VCALENDAR'
+    ].filter(Boolean).join('\r\n');
+    const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = (ev.title||'event').replace(/[^\p{L}\p{N}\- ]/gu,'').trim().slice(0,60) + '.ics';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 400);
+    toast(ev.eventDate ? 'บันทึกลงปฏิทินแล้ว' : 'กิจกรรมนี้ยังไม่ระบุวันที่แน่นอน บันทึกเป็นวันนี้ไว้ก่อน');
+  }catch(e){ console.warn('ics export failed', e); toast('ไม่สามารถบันทึกลงปฏิทินได้'); }
 }
 function fileToResizedDataURL(file, maxW, quality){
   quality = quality || 0.82;
@@ -711,7 +801,10 @@ const ICONS = {
   phone:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg>`,
   link:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14a5 5 0 007.5.5l2-2a5 5 0 00-7-7l-1.2 1.1"/><path d="M14 10a5 5 0 00-7.5-.5l-2 2a5 5 0 007 7l1.1-1.2"/></svg>`,
   gift:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M3 13h18"/><path d="M12 9v12"/><path d="M12 9C10 9 7.5 8 7.5 6a2.5 2.5 0 015 0V9"/><path d="M12 9c2 0 4.5-1 4.5-3a2.5 2.5 0 00-5 0V9"/></svg>`,
-  headset:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13a8 8 0 0116 0"/><rect x="2.5" y="13" width="5" height="7" rx="2"/><rect x="16.5" y="13" width="5" height="7" rx="2"/><path d="M20 20v1a3 3 0 01-3 3h-3"/></svg>`
+  headset:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13a8 8 0 0116 0"/><rect x="2.5" y="13" width="5" height="7" rx="2"/><rect x="16.5" y="13" width="5" height="7" rx="2"/><path d="M20 20v1a3 3 0 01-3 3h-3"/></svg>`,
+  calendar:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>`,
+  medal:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="15" r="6"/><path d="M9 9.5L7 3h3l2 5"/><path d="M15 9.5L17 3h-3l-2 5"/><path d="M12 12v6"/></svg>`,
+  discordLogo:`<svg viewBox="0 0 245 240" fill="currentColor"><path d="M104 103c-5.7 0-10.2 5-10.2 11s4.6 11 10.2 11c5.7 0 10.2-5 10.2-11 .1-6-4.5-11-10.2-11zm38 0c-5.7 0-10.2 5-10.2 11s4.6 11 10.2 11c5.7 0 10.3-5 10.3-11s-4.6-11-10.3-11z"/><path d="M189.5 20h-134C44.6 20 36 28.6 36 39.2v162.7c0 10.6 8.6 19.2 19.5 19.2h113.4l-5.3-18.5 12.8 11.9 12.1 11.2 21.5 19V39.2C210 28.6 201.4 20 189.5 20zM148.4 158.3s-3.6-4.3-6.6-8.1c13.1-3.7 18.1-11.9 18.1-11.9-4.1 2.7-8 4.6-11.5 5.9-5 2.1-9.8 3.5-14.5 4.3-9.6 1.8-18.4 1.3-25.9-.1-5.7-1.1-10.6-2.7-14.7-4.3-2.3-.9-4.8-2-7.3-3.4-.3-.2-.6-.3-.9-.5-.2-.1-.3-.2-.4-.3-1.8-1-2.8-1.7-2.8-1.7s4.8 8 17.5 11.8c-3 3.8-6.7 8.3-6.7 8.3-22.1-.7-30.5-15.2-30.5-15.2 0-32.2 14.4-58.3 14.4-58.3 14.4-10.8 28.1-10.5 28.1-10.5l1 1.2c-18 5.2-26.3 13.1-26.3 13.1s2.2-1.2 5.9-2.9c10.7-4.7 19.2-6 22.7-6.3.6-.1 1.1-.2 1.7-.2 6.1-.8 13-.1 20 2.4 9.3 3.3 19.3 10.3 19.3 10.3s-7.9-7.5-24.9-12.7l1.4-1.6s13.7-.3 28.1 10.5c0 0 14.4 26.1 14.4 58.3 0 0-8.5 14.5-30.6 15.2z"/></svg>`
 };
 function bottomNav(){
   const items = [
@@ -1138,6 +1231,7 @@ function pageMemberCard(id){
   const canView = isSelf || u.privacy==='public';
   if(!canView) return shell(`<div class="card empty">โปรไฟล์นี้เป็นส่วนตัว เจ้าของยังไม่อนุญาตให้ดูบัตรสมาชิก</div>`, {title:'บัตรสมาชิก'});
   const info = levelInfo(u.points);
+  const since = memberSinceText(u);
   state.mcTargetUrl = location.origin + location.pathname + '#/member:' + targetId;
   return shell(`
     <div class="mc-wrap">
@@ -1158,14 +1252,15 @@ function pageMemberCard(id){
             <div class="mc-uid">UID ${esc(u.memberId||'--------')}</div>
           </div>
         </div>
+        ${since ? `<div class="mc-since">${ICONS.medal}<span>เป็นสมาชิกมาแล้ว ${esc(since)}</span></div>` : ''}
         <div class="mc-stats">
-          <div class="mc-stat"><div class="mc-stat-lbl">GP</div><div class="mc-stat-val">${Number(u.points||0).toLocaleString('th-TH')}</div></div>
+          <div class="mc-stat mc-stat-primary"><div class="mc-stat-lbl">GP</div><div class="mc-stat-val">${Number(u.points||0).toLocaleString('th-TH')}</div></div>
           <div class="mc-divider-v"></div>
           <div class="mc-stat"><div class="mc-stat-lbl">Point</div><div class="mc-stat-val">${Number(u.discordPoints||0).toLocaleString('th-TH')}</div></div>
         </div>
         <div class="mc-bottom">
-          <canvas id="mcBarcode"></canvas>
-          <div class="mc-scanhint">สแกนบาร์โค้ดเพื่อดูโปรไฟล์สมาชิก</div>
+          <div class="mc-qr-card"><canvas id="mcBarcode"></canvas></div>
+          <div class="mc-scanhint">สแกน QR เพื่อดูโปรไฟล์สมาชิก</div>
         </div>
       </div>
       <div class="mc-note">มุมมองตัวอย่างบัตรสมาชิกดิจิทัล · ไม่สามารถบันทึกหรือดาวน์โหลดได้</div>
@@ -1236,9 +1331,13 @@ function pageEvents(){
       <div class="card">
         ${ev.posterURL?`<img class="poster" src="${esc(ev.posterURL)}">`:''}
         <div style="font-weight:700;margin-top:10px;">${esc(ev.title)}</div>
+        ${ev.eventDate ? `<div class="pill" style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,rgba(233,201,138,.16),rgba(233,201,138,.05));border:1px solid rgba(233,201,138,.3);color:#e9c98a;font-weight:600;"><span class="icon-sm">${ICONS.calendar}</span>${fmtEventDate(ev.eventDate, ev.eventTime)}</div>` : ''}
         <div class="muted" style="font-size:12px;margin-top:4px;">${esc(ev.duration||'')}</div>
         <div style="font-size:13px;margin-top:6px;">${esc(ev.description||'')}</div>
-        ${ev.linkedMissionId ? `<button class="btn btn-sm" style="margin-top:10px;" data-action="goto-mission-from-event" data-id="${ev.linkedMissionId}">สมัครภารกิจที่เกี่ยวข้อง →</button>` : ''}
+        <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap;">
+          ${ev.linkedMissionId ? `<button class="btn btn-sm" data-action="goto-mission-from-event" data-id="${ev.linkedMissionId}">สมัครภารกิจที่เกี่ยวข้อง →</button>` : ''}
+          <button class="btn btn-sm" data-action="add-to-calendar" data-id="${ev.id}"><span class="icon-sm">${ICONS.calendar}</span> บันทึกลงปฏิทิน</button>
+        </div>
       </div>
     `).join('') || `<div class="empty">ยังไม่มีกิจกรรม</div>`}
   `, {title:'กิจกรรม / แจ้งเตือน'});
@@ -1794,7 +1893,12 @@ function eventFormModal(existing){
         <input type="file" id="ev_poster" accept="image/*">
         <label>ชื่อกิจกรรม</label><input type="text" id="ev_title" value="${esc(ev.title)}" required>
         <label>รายละเอียดกิจกรรม</label><textarea id="ev_desc">${esc(ev.description)}</textarea>
-        <label>ระยะเวลา</label><input type="text" id="ev_duration" placeholder="เช่น 1-3 พ.ย. 2569" value="${esc(ev.duration)}">
+        <div class="grid2">
+          <div><label>วันที่จัดกิจกรรม</label><input type="date" id="ev_date" value="${esc(ev.eventDate)}"></div>
+          <div><label>เวลา (ถ้ามี)</label><input type="time" id="ev_time" value="${esc(ev.eventTime)}"></div>
+        </div>
+        <div class="hint">ใช้สำหรับให้สมาชิกกดบันทึกลงปฏิทินได้อย่างแม่นยำ</div>
+        <label>ระยะเวลา (ข้อความแสดงผล)</label><input type="text" id="ev_duration" placeholder="เช่น 1-3 พ.ย. 2569" value="${esc(ev.duration)}">
         <label>ลิงก์ไปยังภารกิจ (ถ้ามี)</label>
         <select id="ev_mission"><option value="">- ไม่เชื่อมโยง -</option>${state.missions.map(m=>`<option value="${m.id}" ${ev.linkedMissionId===m.id?'selected':''}>${esc(m.title)}</option>`).join('')}</select>
         <button type="submit" class="btn btn-accent btn-block" style="margin-top:16px;" data-id="${ev.id||''}">บันทึกกิจกรรม</button>
@@ -1966,7 +2070,19 @@ function afterRender(path, param){
     const canvas = document.getElementById('mcBarcode');
     if(canvas && state.mcTargetUrl && window.QRious){
       try{
-        new QRious({ element: canvas, value: state.mcTargetUrl, size: 240, background:'#ffffff', foreground:'#0a0a0b', level:'M', padding: 0 });
+        const dpr = window.devicePixelRatio || 1;
+        const displaySize = 128; // logical CSS px shown on screen
+        canvas.style.width = displaySize + 'px';
+        canvas.style.height = displaySize + 'px';
+        new QRious({
+          element: canvas,
+          value: state.mcTargetUrl,
+          size: Math.round(displaySize * dpr), // render at the exact device-pixel size: no extra CSS scaling, no blur/skew
+          background: '#ffffff',
+          foreground: '#171512',
+          level: 'H',
+          padding: 0
+        });
       }catch(e){ console.warn('qr render failed', e); }
     }
   }
@@ -2155,6 +2271,7 @@ document.addEventListener('submit', async (e)=>{
     const file = document.getElementById('ev_poster').files[0];
     if(file){ toast('กำลังอัปโหลดโปสเตอร์...'); posterURL = await uploadImage(file, 'events/poster', 1546); }
     const data = { title:$('#ev_title').value, description:$('#ev_desc').value, duration:$('#ev_duration').value,
+      eventDate: $('#ev_date').value || null, eventTime: $('#ev_time').value || null,
       linkedMissionId: $('#ev_mission').value || null, posterURL };
     if(id){ await db.collection('events').doc(id).update(data); }
     else{ data.createdAt=firebase.firestore.FieldValue.serverTimestamp(); await db.collection('events').add(data); }
@@ -2318,6 +2435,12 @@ document.addEventListener('click', async (e)=>{
   if(action==='filter-mission'){ state.missionFilter = t.dataset.cat || null; render(); return; }
   if(action==='view-mission'){ nav('#/mission:'+t.dataset.id); return; }
   if(action==='goto-mission-from-event'){ nav('#/mission:'+t.dataset.id); return; }
+  if(action==='add-to-calendar'){
+    const ev = state.events.find(x=>x.id===t.dataset.id);
+    if(!ev){ toast('ไม่พบกิจกรรมนี้'); return; }
+    downloadEventToCalendar(ev);
+    return;
+  }
   if(action==='join-mission'){
     const id = t.dataset.id;
     const m = state.missions.find(x=>x.id===id);
