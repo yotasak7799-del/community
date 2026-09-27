@@ -55,6 +55,8 @@ h1,h2,h3,.disp{font-family:'Prompt','Noto Sans Thai',sans-serif; font-weight:600
 ::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit;cursor:pointer}
+[data-action="toggle-like"] svg,[data-action="toggle-comments"] svg{width:18px;height:18px;display:block;flex:none;}
+[data-action="toggle-like"] span:first-of-type,[data-action="toggle-comments"] span:first-of-type{display:inline-flex;align-items:center;}
 input,textarea,select{font-family:inherit}
 
 #frame{
@@ -1546,11 +1548,11 @@ function postCard(p){
     ${p.locationText?`<div class="row muted" style="font-size:12px;margin-top:10px;">${ICONS.pin}<span>${esc(p.locationText)}</span>${(p.lat&&p.lng)?`<a href="https://www.google.com/maps?q=${p.lat},${p.lng}" target="_blank" rel="noopener" style="margin-left:auto;text-decoration:underline;">แผนที่</a>`:''}</div>`:''}
     <div class="divider"></div>
     <div class="row" style="gap:18px;">
-      <button data-action="toggle-like" data-id="${p.id}" style="background:none;border:none;display:flex;align-items:center;gap:6px;color:${liked?'var(--danger)':'var(--muted)'};font-size:13px;">
-        ${liked?ICONS.heartFill:ICONS.heart}<span>${(p.likes||[]).length}</span>
+      <button data-action="toggle-like" data-id="${p.id}" style="background:none;border:none;display:flex;align-items:center;gap:6px;color:${liked?'var(--danger)':'var(--muted)'};font-size:13px;padding:4px 0;">
+        <span style="width:18px;height:18px;display:inline-flex;flex:none;">${liked?ICONS.heartFill:ICONS.heart}</span><span>${(p.likes||[]).length}</span>
       </button>
-      <button data-action="toggle-comments" data-id="${p.id}" style="background:none;border:none;display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;">
-        ${ICONS.comment}<span>${comments.length}</span>
+      <button data-action="toggle-comments" data-id="${p.id}" style="background:none;border:none;display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;padding:4px 0;">
+        <span style="width:18px;height:18px;display:inline-flex;flex:none;">${ICONS.comment}</span><span>${comments.length}</span>
       </button>
     </div>
     ${commentsOpen ? `
@@ -2408,7 +2410,7 @@ document.addEventListener('click', async (e)=>{
     /* อัปเดตเฉพาะปุ่มไลค์ ไม่ re-render ทั้งหน้า เพื่อไม่ให้ comment input หาย */
     const nowLiked = (p.likes||[]).includes(uid);
     t.style.color = nowLiked ? 'var(--danger)' : 'var(--muted)';
-    t.innerHTML = (nowLiked ? ICONS.heartFill : ICONS.heart) + '<span>' + (p.likes||[]).length + '</span>';
+    t.innerHTML = '<span style="width:18px;height:18px;display:inline-flex;flex:none;">' + (nowLiked ? ICONS.heartFill : ICONS.heart) + '</span><span>' + (p.likes||[]).length + '</span>';
     return;
   }
   if(action==='toggle-comments'){
@@ -2449,7 +2451,7 @@ document.addEventListener('click', async (e)=>{
       }
       const post2 = state.posts.find(function(x){ return x.id===id; });
       const commentCount = post2 ? (post2.comments||[]).length : 0;
-      t.innerHTML = ICONS.comment + '<span>' + commentCount + '</span>';
+      t.innerHTML = '<span style="width:18px;height:18px;display:inline-flex;flex:none;">' + ICONS.comment + '</span><span>' + commentCount + '</span>';
     } else {
       render();
     }
@@ -2487,7 +2489,7 @@ document.addEventListener('click', async (e)=>{
       const card = section.closest('.card');
       if(card){
         const commentBtn = card.querySelector('[data-action="toggle-comments"]');
-        if(commentBtn) commentBtn.innerHTML = ICONS.comment + '<span>' + (post.comments||[]).length + '</span>';
+        if(commentBtn) commentBtn.innerHTML = '<span style="width:18px;height:18px;display:inline-flex;flex:none;">' + ICONS.comment + '</span><span>' + (post.comments||[]).length + '</span>';
       }
     } else {
       render();
